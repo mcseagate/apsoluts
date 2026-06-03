@@ -1,0 +1,16 @@
+{
+  "name": "backend",
+  "module": "src/index.js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "node --env-file=.env --watch src/index.js",
+    "start": "node --env-file=.env src/index.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "1.12.0",
+    "hono": "4.6.0",
+    "mongoose": "^9.6.3",
+    "nodemailer": "^8.0.10"
+  }
+}
