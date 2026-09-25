@@ -1,8 +1,131 @@
 {
   "rewrites": [
     {
+      "source": "/ascendflare/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/ascendflare/:path*"
+    },
+    {
+      "source": "/berean-scroll/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/berean-scroll/:path*"
+    },
+    {
+      "source": "/clearbook/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/clearbook/:path*"
+    },
+    {
+      "source": "/covenant/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/covenant/:path*"
+    },
+    {
+      "source": "/folio/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/folio/:path*"
+    },
+    {
+      "source": "/foodintel/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/foodintel/:path*"
+    },
+    {
+      "source": "/lifeos-finance/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/lifeos-finance/:path*"
+    },
+    {
+      "source": "/linguago/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/linguago/:path*"
+    },
+    {
+      "source": "/mediverify-ai/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/mediverify-ai/:path*"
+    },
+    {
+      "source": "/pairwise/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/pairwise/:path*"
+    },
+    {
+      "source": "/quoteshield/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/quoteshield/:path*"
+    },
+    {
+      "source": "/screenshot-inbox/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/screenshot-inbox/:path*"
+    },
+    {
+      "source": "/skybooker/:path*",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/skybooker/:path*"
+    },
+    {
+      "source": "/style.css",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/style.css"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/ascendflare/:doc(privacy|terms|support|store)",
+      "destination": "/ascendflare/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/berean-scroll/:doc(privacy|terms|support|store)",
+      "destination": "/berean-scroll/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/clearbook/:doc(privacy|terms|support|store)",
+      "destination": "/clearbook/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/covenant/:doc(privacy|terms|support|store)",
+      "destination": "/covenant/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/folio/:doc(privacy|terms|support|store)",
+      "destination": "/folio/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/foodintel/:doc(privacy|terms|support|store)",
+      "destination": "/foodintel/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/lifeos-finance/:doc(privacy|terms|support|store)",
+      "destination": "/lifeos-finance/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/linguago/:doc(privacy|terms|support|store)",
+      "destination": "/linguago/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/mediverify-ai/:doc(privacy|terms|support|store)",
+      "destination": "/mediverify-ai/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/pairwise/:doc(privacy|terms|support|store)",
+      "destination": "/pairwise/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/quoteshield/:doc(privacy|terms|support|store)",
+      "destination": "/quoteshield/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/screenshot-inbox/:doc(privacy|terms|support|store)",
+      "destination": "/screenshot-inbox/:doc/",
+      "permanent": true
+    },
+    {
+      "source": "/skybooker/:doc(privacy|terms|support|store)",
+      "destination": "/skybooker/:doc/",
+      "permanent": true
     }
   ]
 }
