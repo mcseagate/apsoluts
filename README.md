@@ -36,6 +36,9 @@ Two things follow from that, and both are easy to trip over:
 - The rules sit **above** the SPA catch-all in `vercel.json`. The first matching
   rewrite wins, and `/(.*)` matches everything, so anything added below it never
   runs. Keep it last.
+- The sources use `(.*)`, not `:path*`. The parameter form does not match a
+  trailing slash, so `/folio/privacy/` — the form every link uses — fell through
+  to the app and served the 404 page, while `/folio/privacy/index.html` worked.
 - A document URL without its trailing slash is redirected here before the proxy
   runs. Left to GitHub Pages, its own redirect would send the reader to
   `mcseagate.github.io` and show the real host.

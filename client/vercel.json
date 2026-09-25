@@ -1,56 +1,108 @@
 {
   "rewrites": [
     {
-      "source": "/ascendflare/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/ascendflare/:path*"
+      "source": "/ascendflare",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/ascendflare/"
     },
     {
-      "source": "/berean-scroll/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/berean-scroll/:path*"
+      "source": "/ascendflare/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/ascendflare/$1"
     },
     {
-      "source": "/clearbook/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/clearbook/:path*"
+      "source": "/berean-scroll",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/berean-scroll/"
     },
     {
-      "source": "/covenant/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/covenant/:path*"
+      "source": "/berean-scroll/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/berean-scroll/$1"
     },
     {
-      "source": "/folio/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/folio/:path*"
+      "source": "/clearbook",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/clearbook/"
     },
     {
-      "source": "/foodintel/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/foodintel/:path*"
+      "source": "/clearbook/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/clearbook/$1"
     },
     {
-      "source": "/lifeos-finance/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/lifeos-finance/:path*"
+      "source": "/covenant",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/covenant/"
     },
     {
-      "source": "/linguago/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/linguago/:path*"
+      "source": "/covenant/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/covenant/$1"
     },
     {
-      "source": "/mediverify-ai/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/mediverify-ai/:path*"
+      "source": "/folio",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/folio/"
     },
     {
-      "source": "/pairwise/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/pairwise/:path*"
+      "source": "/folio/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/folio/$1"
     },
     {
-      "source": "/quoteshield/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/quoteshield/:path*"
+      "source": "/foodintel",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/foodintel/"
     },
     {
-      "source": "/screenshot-inbox/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/screenshot-inbox/:path*"
+      "source": "/foodintel/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/foodintel/$1"
     },
     {
-      "source": "/skybooker/:path*",
-      "destination": "https://mcseagate.github.io/ApexRootsolutions/skybooker/:path*"
+      "source": "/lifeos-finance",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/lifeos-finance/"
+    },
+    {
+      "source": "/lifeos-finance/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/lifeos-finance/$1"
+    },
+    {
+      "source": "/linguago",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/linguago/"
+    },
+    {
+      "source": "/linguago/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/linguago/$1"
+    },
+    {
+      "source": "/mediverify-ai",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/mediverify-ai/"
+    },
+    {
+      "source": "/mediverify-ai/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/mediverify-ai/$1"
+    },
+    {
+      "source": "/pairwise",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/pairwise/"
+    },
+    {
+      "source": "/pairwise/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/pairwise/$1"
+    },
+    {
+      "source": "/quoteshield",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/quoteshield/"
+    },
+    {
+      "source": "/quoteshield/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/quoteshield/$1"
+    },
+    {
+      "source": "/screenshot-inbox",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/screenshot-inbox/"
+    },
+    {
+      "source": "/screenshot-inbox/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/screenshot-inbox/$1"
+    },
+    {
+      "source": "/skybooker",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/skybooker/"
+    },
+    {
+      "source": "/skybooker/(.*)",
+      "destination": "https://mcseagate.github.io/ApexRootsolutions/skybooker/$1"
     },
     {
       "source": "/style.css",
