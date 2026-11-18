@@ -1,11 +1,14 @@
 {
-  "name": "backend",
+  "name": "apex-root-solutions-api",
   "module": "src/index.js",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": ">=20.6"
+  },
   "scripts": {
     "dev": "node --env-file=.env --watch src/index.js",
-    "start": "node --env-file=.env src/index.js"
+    "start": "node src/index.js"
   },
   "dependencies": {
     "@hono/node-server": "1.12.0",

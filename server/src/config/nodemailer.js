@@ -1,13 +1,6 @@
 import nodemailer from "nodemailer";
 
 export function getTransporter() {
-  console.log(
-    "[SMTP Debug] passSet:",
-    !!process.env.SMTP_PASS,
-    "| length:",
-    process.env.SMTP_PASS?.length,
-  );
-
   const host = process.env.SMTP_HOST || "mail.privateemail.com";
   const port = Number(process.env.SMTP_PORT) || 465;
   const secure = process.env.SMTP_SECURE !== "false"; // Default to true (SSL)

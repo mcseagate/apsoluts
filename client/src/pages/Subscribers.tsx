@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -71,8 +71,9 @@ export default function Subscribers() {
 
   // Check login state on mount
   useEffect(() => {
-    const token = localStorage.getItem("apsoluts_admin_token");
-    if (token === "apsoluts-admin-session-token") {
+    // The server validates the token; an expired or invalid one is dropped on
+    // the first 401 (see the effect below the query).
+    if (localStorage.getItem("apsoluts_admin_token")) {
       setIsLoggedIn(true);
     }
   }, []);
@@ -119,8 +120,9 @@ export default function Subscribers() {
   };
 
   // Query to fetch subscribers
-  const { data, isLoading, isError, refetch } = useQuery<SubscribersResponse>({
+  const { data, isLoading, isError, error, refetch } = useQuery<SubscribersResponse>({
     queryKey: ["subscribers", page, debouncedSearch],
+    retry: (failureCount, err) => !(err instanceof ApiError && err.status === 401) && failureCount < 2,
     queryFn: async () => {
       const token = localStorage.getItem("apsoluts_admin_token");
       return api.get<SubscribersResponse>(
@@ -134,6 +136,15 @@ export default function Subscribers() {
     },
     enabled: isLoggedIn, // Only run query when logged in
   });
+
+  // A 401 means the session expired (tokens last 12 hours): sign out.
+  useEffect(() => {
+    if (error instanceof ApiError && error.status === 401) {
+      localStorage.removeItem("apsoluts_admin_token");
+      setIsLoggedIn(false);
+      toast.error("Your session expired. Please sign in again.");
+    }
+  }, [error]);
 
   // Render Login Screen
   if (!isLoggedIn) {

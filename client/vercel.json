@@ -109,6 +109,10 @@
       "destination": "https://mcseagate.github.io/ApexRootsolutions/style.css"
     },
     {
+      "source": "/api/(.*)",
+      "destination": "https://apex-root-api.onrender.com/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

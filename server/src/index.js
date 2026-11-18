@@ -8,18 +8,25 @@ import { serve } from "@hono/node-server";
 
 const app = new Hono();
 
-// CORS middleware - validates origin against allowlist
+// CORS middleware - validates origin against allowlist. In production the site
+// reaches this API through a same-origin /api rewrite, so CORS only matters for
+// local development and for any extra origin listed in ALLOWED_ORIGINS
+// (comma-separated, exact origins such as https://preview.example.com).
 const allowed = [
   /^http:\/\/localhost(:\d+)?$/,
   /^http:\/\/127\.0\.0\.1(:\d+)?$/,
-  /^https?:\/\/(www\.)?apsoluts\.com$/,
-  /^https:\/\/.*\.vercel\.app$/,
+  /^https:\/\/(www\.)?apsoluts\.com$/,
 ];
+const extraOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
 app.use(
   "*",
   cors({
-    origin: (origin) => (origin && allowed.some((re) => re.test(origin)) ? origin : null),
+    origin: (origin) =>
+      origin && (extraOrigins.includes(origin) || allowed.some((re) => re.test(origin))) ? origin : null,
     credentials: true,
   })
 );
@@ -33,7 +40,7 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 // Global error handler
 app.onError((err, c) => {
   console.error("[Hono Server Error]:", err);
-  return c.json({ error: { message: err.message || "Internal Server Error", code: "INTERNAL_SERVER_ERROR" } }, 500);
+  return c.json({ error: { message: "Internal Server Error", code: "INTERNAL_SERVER_ERROR" } }, 500);
 });
 
 const port = Number(process.env.PORT) || 3000;
