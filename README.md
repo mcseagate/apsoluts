@@ -58,8 +58,8 @@ The site is two deployments:
   API below, so the browser only ever talks to this domain (no CORS, no baked-in backend URL).
   The rule sits above the SPA catch-all, like the product-document rules.
 - **API** (`server/`, Hono on Node) on Render, described by `render.yaml`
-  (service `apex-root-api`, free plan: it sleeps when idle, so the first contact-form
-  submission after a quiet spell can take about 30 seconds). If Render gives the service a
+  (service `apex-root-api`, Starter plan, $7/month: the free plan blocks outbound SMTP, which
+  the contact form needs, and sleeps when idle). If Render gives the service a
   different hostname, update the `/api/(.*)` destination in **both** `vercel.json` and
   `client/vercel.json`.
 

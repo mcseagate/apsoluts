@@ -8,7 +8,9 @@ services:
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /health
-    plan: free
+    # Paid ($7/month): Render blocks outbound SMTP on free instances, so the
+    # contact form could not reach the mail server, and free instances sleep.
+    plan: starter
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
