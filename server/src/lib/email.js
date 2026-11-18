@@ -8,6 +8,11 @@ export async function sendContactEmail(data) {
   const html = getContactTemplate(data);
 
   if (!transporter) {
+    // In production a missing SMTP_PASS must not look like success: the visitor
+    // would be told their message was sent while it was only written to a log.
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("SMTP_PASS is not set; cannot send contact email.");
+    }
     console.log("[Email:Contact Log Only - SMTP_PASS Missing]", {
       from: getFromAddress(),
       to: "contact@apsoluts.com",
