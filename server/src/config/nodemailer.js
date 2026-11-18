@@ -22,6 +22,11 @@ export function getTransporter() {
       user,
       pass,
     },
+    // Fail within seconds if the mail server is unreachable (for example when
+    // the host blocks outbound SMTP) instead of leaving the visitor waiting.
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
   });
 }
 
