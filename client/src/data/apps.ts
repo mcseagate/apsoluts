@@ -1,0 +1,58 @@
+// The apps listed on /apps. Add a store field only when the app is live there:
+// the page shows a "not available yet" note for a store that is left out.
+//
+//   appStoreId   the number after "id" in the App Store URL
+//   playPackage  the Android package name (the "id=" in the Play Store URL)
+
+export interface AppListing {
+  slug: string;
+  name: string;
+  category: string;
+  description: string;
+  appStoreId?: string;
+  playPackage?: string;
+}
+
+// Storefront-free links: the store redirects each visitor to their own country.
+export const appStoreUrl = (id: string) => `https://apps.apple.com/app/id${id}`;
+export const playStoreUrl = (pkg: string) => `https://play.google.com/store/apps/details?id=${pkg}`;
+
+export const apps: AppListing[] = [
+  {
+    slug: "nutreo-scan",
+    name: "Nutreo Scan",
+    category: "Health & Fitness",
+    description: "Scan a barcode, snap a meal or search a food and get clear nutrition insights in seconds.",
+    appStoreId: "6766230485",
+    playPackage: "com.apexrootsolutions.nutreoscan",
+  },
+  {
+    slug: "screenshot-inbox",
+    name: "Screenshot Inbox",
+    category: "Productivity",
+    description: "Reads the screenshots in your camera roll on your device and turns dates, receipts and codes into things to act on.",
+    appStoreId: "6814667636",
+    playPackage: "com.apexroot.screenshotinbox",
+  },
+  {
+    slug: "linguago",
+    name: "LinguaGo",
+    category: "Utilities",
+    description: "An AI translator for what you see, say and type, built to work without asking for your data.",
+    appStoreId: "6805098088",
+  },
+  {
+    slug: "biblical-insight",
+    name: "Biblical Insight",
+    category: "Books",
+    description: "Scripture study tools for daily devotion, sermon preparation and teaching.",
+    appStoreId: "6777496031",
+  },
+  {
+    slug: "orb-pop",
+    name: "Orb Pop",
+    category: "Games",
+    description: "A bubble-shooter with chain reactions, bank shots and combos across ever harder boards.",
+    appStoreId: "6775609501",
+  },
+];

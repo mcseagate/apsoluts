@@ -70,6 +70,12 @@ const Navbar = () => {
                   {link.label}
                 </button>
               ))}
+              <Link
+                to="/apps"
+                className="text-[11px] tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300"
+              >
+                Apps
+              </Link>
             </div>
 
             <div className="hidden lg:flex items-center gap-6">
@@ -124,6 +130,13 @@ const Navbar = () => {
               {link.label.toUpperCase()}
             </button>
           ))}
+          <Link
+            to="/apps"
+            onClick={() => setMobileOpen(false)}
+            className="font-display text-3xl sm:text-4xl tracking-[0.15em] text-foreground hover:text-muted-foreground transition-colors"
+          >
+            APPS
+          </Link>
           <div className="mt-6 flex flex-col items-center gap-5">
             <a
               href="tel:3108496035"
