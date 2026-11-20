@@ -47,6 +47,8 @@ export const apps: AppListing[] = [
     category: "Books",
     description: "Scripture study tools for daily devotion, sermon preparation and teaching.",
     appStoreId: "6777496031",
+    // Underscores, unlike the hyphenated iOS bundle ID.
+    playPackage: "app.rork.biblical_insight_app",
   },
   {
     slug: "orb-pop",
