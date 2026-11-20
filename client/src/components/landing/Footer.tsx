@@ -73,6 +73,14 @@ const Footer = () => {
                   </button>
                 </li>
               ))}
+              <li>
+                <Link
+                  to="/apps"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide"
+                >
+                  Our Apps
+                </Link>
+              </li>
             </ul>
           </div>
 
