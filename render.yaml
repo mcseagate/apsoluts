@@ -30,6 +30,11 @@ services:
       # Secrets: Render prompts for these on first deploy; never commit them.
       - key: MONGO_DB_URL
         sync: false
+      # Mail goes out through Resend's HTTPS API when RESEND_API_KEY is set, and
+      # through SMTP (SMTP_PASS above) only when it is not. SMTP_FROM must be an
+      # address on a domain verified in Resend.
+      - key: RESEND_API_KEY
+        sync: false
       - key: SMTP_PASS
         sync: false
       - key: ADMIN_EMAIL

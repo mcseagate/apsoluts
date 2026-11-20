@@ -1,83 +1,67 @@
-import { getTransporter, getFromAddress } from "../config/nodemailer.js";
+import { getFromAddress } from "../config/nodemailer.js";
+import { sendMail } from "./mailer.js";
 import { getContactTemplate } from "../templates/contact.js";
 import { getNewsletterTemplate, getNewsletterAdminTemplate } from "../templates/newsletter.js";
 
+const NOT_CONFIGURED = "neither RESEND_API_KEY nor SMTP_PASS is set";
+
 export async function sendContactEmail(data) {
-  const transporter = getTransporter();
   const subject = `New Inquiry from ${data.fullName}`;
   const html = getContactTemplate(data);
+  const to = "contact@apsoluts.com";
 
-  if (!transporter) {
-    // In production a missing SMTP_PASS must not look like success: the visitor
-    // would be told their message was sent while it was only written to a log.
+  const sent = await sendMail({ to, replyTo: data.email, subject, html });
+
+  if (!sent) {
+    // In production a missing mail configuration must not look like success: the
+    // visitor would be told their message was sent while it was only written to
+    // a log.
     if (process.env.NODE_ENV === "production") {
-      throw new Error("SMTP_PASS is not set; cannot send contact email.");
+      throw new Error(`Cannot send contact email: ${NOT_CONFIGURED}.`);
     }
-    console.log("[Email:Contact Log Only - SMTP_PASS Missing]", {
+    console.log("[Email:Contact Log Only - mail not configured]", {
       from: getFromAddress(),
-      to: "contact@apsoluts.com",
+      to,
       replyTo: data.email,
       subject,
       html,
     });
     return;
   }
-
-  const info = await transporter.sendMail({
-    from: getFromAddress(),
-    to: "contact@apsoluts.com",
-    replyTo: data.email,
-    subject,
-    html,
-  });
-  console.log(`[Email:Contact Sent Successfully] Message ID: ${info.messageId}`);
+  console.log(`[Email:Contact Sent Successfully] via ${sent.transport}, id ${sent.id}`);
 }
 
 export async function sendNewsletterConfirmation(email) {
-  const transporter = getTransporter();
   const subject = "You're subscribed to Apex Root Solutions updates";
   const html = getNewsletterTemplate(email);
 
-  if (!transporter) {
-    console.log("[Email:Newsletter Log Only - SMTP_PASS Missing]", {
+  const sent = await sendMail({ to: email, subject, html });
+
+  if (!sent) {
+    console.log("[Email:Newsletter Log Only - mail not configured]", {
       from: getFromAddress(),
       to: email,
       subject,
     });
     return;
   }
-
-  const info = await transporter.sendMail({
-    from: getFromAddress(),
-    to: email,
-    subject,
-    html,
-  });
-  console.log(`[Email:Newsletter Sent Successfully] Message ID: ${info.messageId} to ${email}`);
+  console.log(`[Email:Newsletter Sent Successfully] via ${sent.transport}, id ${sent.id} to ${email}`);
 }
 
 export async function sendNewsletterAdminNotification(email) {
-  const transporter = getTransporter();
   const subject = `New Newsletter Subscriber: ${email}`;
   const html = getNewsletterAdminTemplate(email);
-  const adminEmail = process.env.SMTP_USER || "contact@apsoluts.com";
+  const adminEmail = process.env.SMTP_USER?.trim() || "contact@apsoluts.com";
 
-  if (!transporter) {
-    console.log("[Email:Newsletter Admin Alert Log Only - SMTP_PASS Missing]", {
+  const sent = await sendMail({ to: adminEmail, subject, html });
+
+  if (!sent) {
+    console.log("[Email:Newsletter Admin Alert Log Only - mail not configured]", {
       from: getFromAddress(),
       to: adminEmail,
       subject,
     });
     return;
   }
-
-  const info = await transporter.sendMail({
-    from: getFromAddress(),
-    to: adminEmail,
-    subject,
-    html,
-  });
-  console.log(`[Email:Newsletter Admin Alert Sent Successfully] Message ID: ${info.messageId} to ${adminEmail}`);
+  console.log(`[Email:Newsletter Admin Alert Sent Successfully] via ${sent.transport}, id ${sent.id} to ${adminEmail}`);
 }
-
-
