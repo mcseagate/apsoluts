@@ -9,9 +9,9 @@ type Platform = "ios" | "android" | "other";
 function detectPlatform(): Platform {
   if (typeof navigator === "undefined") return "other";
   const ua = navigator.userAgent;
+  if (/Android/i.test(ua)) return "android";
   if (/iPhone|iPad|iPod/.test(ua)) return "ios";
   if (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) return "ios";
-  if (/Android/i.test(ua)) return "android";
   return "other";
 }
 
