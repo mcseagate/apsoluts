@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || "";
+// Production always calls the same-origin /api route, which vercel.json rewrites
+// to the Render API. VITE_BACKEND_URL is honoured only by the dev server, so a
+// stale value in the hosting project can no longer send visitors to a dead URL.
+const API_BASE_URL = import.meta.env.DEV ? import.meta.env.VITE_BACKEND_URL || "" : "";
 
 class ApiError extends Error {
   constructor(message: string, public status: number, public data?: unknown) {
