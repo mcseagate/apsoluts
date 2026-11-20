@@ -31,8 +31,11 @@ services:
       - key: MONGO_DB_URL
         sync: false
       # Mail goes out through Resend's HTTPS API when RESEND_API_KEY is set, and
-      # through SMTP (SMTP_PASS above) only when it is not. SMTP_FROM must be an
-      # address on a domain verified in Resend.
+      # through SMTP (SMTP_PASS above) only when it is not. RESEND_FROM must be an
+      # address on a domain verified in Resend; apsoluts.com is not (the free
+      # plan's domain limit is reached), so this uses mail.apexrsol.com.
+      - key: RESEND_FROM
+        value: Apex Root Solutions <contact@mail.apexrsol.com>
       - key: RESEND_API_KEY
         sync: false
       - key: SMTP_PASS

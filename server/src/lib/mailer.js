@@ -9,8 +9,8 @@ import { getTransporter, getFromAddress } from "../config/nodemailer.js";
 //   neither         -> sendMail resolves to null; the caller decides whether
 //                      that is acceptable (development) or an error (production).
 //
-// Resend only delivers from a domain you have verified in its dashboard, so
-// SMTP_FROM must be an address on that domain.
+// Resend only delivers from a domain verified in its dashboard, so RESEND_FROM
+// must be an address on one (it falls back to SMTP_FROM, then the default).
 
 const RESEND_URL = "https://api.resend.com/emails";
 const RESEND_TIMEOUT_MS = 15_000;
@@ -29,7 +29,7 @@ async function sendViaResend({ to, subject, html, replyTo }) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: getFromAddress(),
+      from: process.env.RESEND_FROM?.trim() || getFromAddress(),
       to: [to],
       subject,
       html,
