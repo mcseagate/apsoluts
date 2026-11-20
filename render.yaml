@@ -1,0 +1,48 @@
+# Render Blueprint for the Apex Root Solutions API (contact form, newsletter,
+# subscriber admin). The website itself is the Vercel project; see README.md.
+services:
+  - type: web
+    name: apex-root-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    # Paid ($7/month): Render blocks outbound SMTP on free instances, so the
+    # contact form could not reach the mail server, and free instances sleep.
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: SMTP_HOST
+        value: mail.privateemail.com
+      - key: SMTP_PORT
+        value: "465"
+      - key: SMTP_SECURE
+        value: "true"
+      - key: SMTP_USER
+        value: contact@apsoluts.com
+      - key: SMTP_FROM
+        value: Apex Root Solutions <contact@apsoluts.com>
+      # Secrets: Render prompts for these on first deploy; never commit them.
+      - key: MONGO_DB_URL
+        sync: false
+      # Mail goes out through Resend's HTTPS API when RESEND_API_KEY is set, and
+      # through SMTP (SMTP_PASS above) only when it is not. RESEND_FROM must be an
+      # address on a domain verified in Resend; apsoluts.com is not (the free
+      # plan's domain limit is reached), so this uses mail.apexrsol.com.
+      - key: RESEND_FROM
+        value: Apex Root Solutions <contact@mail.apexrsol.com>
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_TOKEN_SECRET
+        generateValue: true

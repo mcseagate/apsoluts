@@ -23,8 +23,8 @@ const Navbar = () => {
 
   // Check if admin is logged in on mount
   useEffect(() => {
-    const token = localStorage.getItem("apsoluts_admin_token");
-    setIsAdmin(token === "apsoluts-admin-session-token");
+    // Only decides whether to show the admin link; the server checks the token.
+    setIsAdmin(Boolean(localStorage.getItem("apsoluts_admin_token")));
   }, []);
 
   // Lock body scroll when mobile menu is open
