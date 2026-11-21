@@ -4,8 +4,10 @@ Custom-project billing for apsoluts.com: visitors request a quote, an administra
 turns it into a project with agreed scope and payment milestones, issues invoices,
 and clients pay them on Stripe's hosted checkout.
 
-**Status: built and tested in Stripe test mode only.** Nothing here takes real money
-until you complete [Going live](#going-live).
+**Status: live.** Stripe is in **live mode** on www.apsoluts.com since 2026-11-21. A real $1.00 payment was
+made, confirmed by the live webhook, shown as paid in admin and refunded, and the test records were removed.
+Test mode still works (use test keys, see [Setup](#setup)); see [Live mode](#live-mode) for how production is
+configured and what to check before customers pay.
 
 Established with the owner: business in the **United States**, billing currency
 **USD**, provider **Stripe**.
@@ -117,9 +119,10 @@ It creates the billing collections and their unique indexes and is safe to repea
 | `BUSINESS_LEGAL_NAME` | Exact legal name of the invoicing entity | Printed on invoices; issuing is blocked without it |
 | `BUSINESS_ADDRESS` | Postal address, `\|` between lines | Same |
 | `BUSINESS_EMAIL` | Billing contact address | Same |
-| `INVOICE_LINK_SECRET` | 32+ random characters (`openssl rand -base64 48`); the blueprint generates one | Signs client links |
-| `STRIPE_SECRET_KEY` | **Test** secret key `sk_test_…` | Creates checkout sessions |
-| `STRIPE_WEBHOOK_SECRET` | `whsec_…` of the webhook endpoint (step 3) | Verifies webhooks |
+| `INVOICE_LINK_SECRET` | 32+ random characters. In Render add the variable and press **Generate** next to its value. (`render.yaml` only creates it when a blueprint is first synced, so on an existing service it is **not** created for you; `/admin/billing` says "INVOICE_LINK_SECRET is not set" until you add it.) | Signs client links |
+| `STRIPE_SECRET_KEY` | Test: `sk_test_…`. Live: a key dedicated to this site, `rk_live_…` with **Checkout Sessions: Write** only (see [Live mode](#live-mode)) | Creates and closes checkout sessions |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_…` of the webhook endpoint in the **same mode** as the key (step 3) | Verifies webhooks |
+| `STRIPE_ENABLE_LIVE` | `true` only when you intend to take real payments | A live key is ignored without it |
 
 Optional: `BUSINESS_PHONE`, `BUSINESS_TAX_ID`, `INVOICE_TAX_NOTE`, `ADMIN_NOTIFY_EMAIL`,
 `INVOICE_PREFIX`, `INVOICE_DEFAULT_DUE_DAYS`, `SITE_URL` (defaults to `https://www.apsoluts.com` in production).
@@ -130,9 +133,9 @@ Enter secrets in the Render dashboard, never in chat or in git.
 > a tax line, number or terms, put them in `BUSINESS_TAX_ID` / `INVOICE_TAX_NOTE`, which
 > print exactly as written. Payment terms and acceptance wording are yours to supply.
 
-### 3. Create the Stripe test webhook
+### 3. Create the Stripe webhook (test shown; live uses the same URL and events)
 
-In the Stripe dashboard switch to **Test mode**, then Developers → Webhooks → Add endpoint:
+In the Stripe dashboard choose **Test mode** (or live mode for production), then Developers → Webhooks → Add endpoint / Create an event destination:
 
 * **URL:** `https://apex-root-api.onrender.com/api/webhooks/stripe` — point it at Render
   directly, not through the Vercel `/api` rewrite, so the signed body arrives untouched.
@@ -157,16 +160,53 @@ In the Stripe dashboard switch to **Test mode**, then Developers → Webhooks �
 Local development: `stripe listen --forward-to localhost:3000/api/webhooks/stripe` prints a
 `whsec_…` to use as `STRIPE_WEBHOOK_SECRET` in `server/.env`.
 
-## Going live
+## Live mode
 
-Not done, and not enabled. When you decide to:
+Production runs on a live key and a live webhook. How it is set up:
 
-1. Finish Stripe account activation (business details, bank account) in the dashboard.
-2. Supply the business details above; have an accountant confirm tax/terms wording.
-3. Create a **live-mode** webhook endpoint (same URL and events) and copy its secret.
-4. In Render set `STRIPE_SECRET_KEY` (live), `STRIPE_WEBHOOK_SECRET` (live) **and** `STRIPE_ENABLE_LIVE=true`.
-   Without that last flag a live key is refused.
-5. Make one small real payment to yourself, confirm it shows **paid**, then refund it.
+* **Webhook:** a live-mode destination named `apsoluts-invoicing-live` at
+  `https://apex-root-api.onrender.com/api/webhooks/stripe`, snapshot payloads, the same nine events as the test one.
+  Its `whsec_…` is `STRIPE_WEBHOOK_SECRET`. Test and live have **different** signing secrets and keys: change the
+  key and the secret together, in one save, or payments will fail until both match.
+* **Key:** `STRIPE_SECRET_KEY` is a restricted live key created for this site only (Developers → API keys → Create secret key →
+  *Building your own integration* → *Custom permissions* → **Checkout Sessions: Write**). The app only creates, fetches and expires
+  checkout sessions; refunds and disputes arrive as webhook events and are handled in the Stripe dashboard. **Do not reuse another
+  site's key** (the account also holds a "BereanTube website" key): rotating it later would break that site.
+* **Flag:** `STRIPE_ENABLE_LIVE=true`. Without it a live key is refused and `/admin/billing` shows "live payments are not enabled".
+* `/admin/billing` shows **"Stripe ready in LIVE mode"** when the key, flag and webhook secret are all in place.
+
+### Before customers pay (owner's checklist)
+
+The software does not check these; they are Stripe-account and business decisions:
+
+1. **Which Stripe account:** payments pay out to that account's bank account and use its business name. The account used here is
+   "Berean Desk"; confirm it is the right place for Apex Root Solutions LLC money, or use a separate account.
+2. **Payout bank account** and account activation complete.
+3. **Statement descriptor and public business name,** so customers recognize the charge.
+4. **Payment methods:** Checkout offers whatever is enabled under Settings → Payment methods (Card, Klarna, Bank, Cash App Pay and others
+   have been seen). Bank and similar methods settle later; the invoice stays **unpaid** until Stripe confirms, then turns paid.
+   Turn off any method you do not want.
+5. **Tax and terms:** none are calculated or printed unless you set `BUSINESS_TAX_ID` / `INVOICE_TAX_NOTE`; confirm with your accountant.
+
+### Checking live mode end to end
+
+1. Create a quote, project (one milestone, a small price such as $1.00, within Stripe's $0.50 minimum), record acceptance, create and issue an invoice.
+   Do not press *Email to client* unless the address is yours.
+2. Open the client link, press *Pay invoice*, and pay with a real card you control. Confirm the page changes to "Payment received" and the invoice is **paid** in admin
+   with a payment marked **live**.
+3. Refund the payment in Stripe (Payments → the payment → Refund). The invoice stays paid and shows the refund. Stripe normally keeps its processing fee.
+4. Check the webhook destination's *Event deliveries* in Stripe: each event should show a 200 response.
+
+### Removing test records
+
+A paid invoice cannot be deleted from the admin on purpose (voiding is refused once paid). If you must remove test data, do it from the Render
+shell against the database, matching the test records by name and text, run a **dry run first**, and abort unless exactly one quote, project and
+invoice match. Deleting is permanent. Invoice numbers are not reused: the counter keeps going (INV-2026-0003 follows a deleted 0002).
+
+### Going back to test mode
+
+Put the `sk_test_…` key and the test webhook's `whsec_…` back in Render together (and you may remove `STRIPE_ENABLE_LIVE`). Test-mode
+payments are fake and use the card numbers in [Setup](#setup).
 
 ## Tests
 
