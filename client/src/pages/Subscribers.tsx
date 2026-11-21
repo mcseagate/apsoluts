@@ -257,6 +257,12 @@ export default function Subscribers() {
               </h1>
             </div>
           </Link>
+          <Link
+            to="/admin/billing"
+            className="ml-auto mr-4 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Billing
+          </Link>
           <Button
             onClick={handleLogout}
             variant="outline"

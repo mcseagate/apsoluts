@@ -698,10 +698,10 @@ const Pricing = () => {
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                to="/#contact"
+                to="/quote"
                 className="flex items-center justify-center gap-2 bg-background px-8 py-4 text-[11px] font-medium uppercase tracking-[0.2em] text-foreground transition-colors hover:bg-background/85"
               >
-                Start a project
+                Request a quote
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
               <a
