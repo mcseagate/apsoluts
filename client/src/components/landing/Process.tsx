@@ -35,7 +35,7 @@ const steps: Step[] = [
   {
     number: "03",
     title: "Build",
-    body: "Native, Flutter or Expo for phones, a native Windows application for the desktop, and one clean API and database behind them all. You see a working build every week.",
+    body: "Native, Flutter or Expo for phones, a native Windows application on .NET and WinUI for the desktop, and one clean API and database behind them all. You see a working build every week.",
     log: [
       { text: "$ apex build --ios --android --web --windows" },
       { text: "api, database and auth online" },
@@ -55,10 +55,10 @@ const steps: Step[] = [
   {
     number: "05",
     title: "Ship",
-    body: "We prepare the store listings or a signed Windows installer, handle review and push the release live, then stay on to keep it fast and current.",
+    body: "We prepare the store listings or a signed Windows installer or Microsoft Store listing, handle review and push the release live, then stay on to keep it fast and current.",
     log: [
       { text: "$ apex ship --app-store --google-play --windows" },
-      { text: "listings and installer prepared" },
+      { text: "listings, installer and Microsoft Store entry prepared" },
       { text: "live. monitoring on", ok: true },
     ],
   },

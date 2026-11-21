@@ -1,5 +1,8 @@
 import { motion } from "framer-motion";
 import Spotlight from "@/components/fx/Spotlight";
+import { windowsTech } from "@/data/pricing";
+import { WHATSAPP_DISPLAY, WINDOWS_MESSAGE, whatsappUrl } from "@/data/contact";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 import {
   Smartphone,
   Monitor,
@@ -24,6 +27,8 @@ const services = [
     icon: Monitor,
     title: "Windows Software Development",
     isNew: true,
+    tech: windowsTech,
+    whatsApp: true,
     description:
       "Desktop applications for Windows, from internal business tools to polished commercial software, delivered with a signed installer or a Microsoft Store listing.",
   },
@@ -132,6 +137,32 @@ const Services = () => {
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   {service.description}
                 </p>
+                {service.tech && (
+                  <ul className="mt-5 flex flex-wrap gap-2" aria-label="Built with">
+                    {service.tech.map((t) => (
+                      <li
+                        key={t}
+                        className="border border-border px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground transition-colors group-hover:border-accent/50"
+                      >
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {service.whatsApp && (
+                  <a
+                    href={whatsappUrl(WINDOWS_MESSAGE)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-6 inline-flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-accent pb-1 text-[11px] font-medium uppercase tracking-[0.2em] text-accent transition-colors hover:text-foreground"
+                  >
+                    <span className="flex items-center gap-2 whitespace-nowrap">
+                      <WhatsAppIcon size={14} />
+                      WhatsApp us for pricing
+                    </span>
+                    <span className="whitespace-nowrap text-foreground/80">{WHATSAPP_DISPLAY}</span>
+                  </a>
+                )}
               </Spotlight>
             </motion.div>
           ))}

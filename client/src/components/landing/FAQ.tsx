@@ -30,7 +30,7 @@ const faqs = [
   {
     question: "Do you build Windows desktop software?",
     answer:
-      "Yes. We build Windows applications, from internal business tools to commercial software, and take them all the way to a signed installer or a Microsoft Store listing. A Windows app can share the same API and database as your mobile and web apps, so one backend can serve every platform.",
+      "Yes. We build Windows applications, from internal business tools to commercial software, and take them all the way to a signed installer or a Microsoft Store listing. A Windows app can share the same API and database as your mobile and web apps, so one backend can serve every platform. Windows projects are quoted individually, so message us on WhatsApp at +1 682-489-6177 for pricing.",
   },
   {
     question: "Do you provide post-launch support and maintenance?",
