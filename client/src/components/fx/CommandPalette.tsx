@@ -44,6 +44,7 @@ const sections = [
 const pages = [
   { label: "Our apps", to: "/apps", icon: Smartphone, keywords: "app store google play download" },
   { label: "Pricing", to: "/pricing", icon: Tag, keywords: "cost estimate quote price" },
+  { label: "Request a quote", to: "/quote", icon: MessageSquare, keywords: "custom project proposal estimate" },
   { label: "Privacy policy", to: "/privacy-policy", icon: FileText, keywords: "legal data" },
   { label: "Terms of service", to: "/terms-of-service", icon: FileText, keywords: "legal" },
 ];

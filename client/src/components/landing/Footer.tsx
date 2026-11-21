@@ -92,6 +92,14 @@ const Footer = () => {
                   Pricing
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/quote"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide"
+                >
+                  Request a Quote
+                </Link>
+              </li>
             </ul>
           </div>
 
