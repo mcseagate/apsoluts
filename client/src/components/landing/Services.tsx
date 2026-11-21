@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import Spotlight from "@/components/fx/Spotlight";
 import {
   Smartphone,
   Palette,
@@ -95,7 +96,7 @@ const Services = () => {
             <h2 className="font-display text-5xl md:text-7xl lg:text-9xl leading-none tracking-wide text-foreground">
               OUR
               <br />
-              SERVICES
+              <span className="text-outline">SERVICES</span>
             </h2>
           </div>
           <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
@@ -112,20 +113,22 @@ const Services = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: i * 0.07 }}
               viewport={{ once: true }}
-              className="group bg-secondary p-8 md:p-9 lg:p-10 hover:bg-card transition-colors duration-300 cursor-default"
+              className="bg-secondary"
             >
-              <div className="flex items-start justify-between mb-8">
-                <span className="font-display text-5xl text-muted-foreground/20 group-hover:text-muted-foreground/30 transition-colors leading-none">
-                  {service.number}
-                </span>
-                <service.icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors mt-1" />
-              </div>
-              <h3 className="text-foreground font-medium text-base tracking-wide mb-3">
-                {service.title}
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {service.description}
-              </p>
+              <Spotlight className="group h-full p-8 md:p-9 lg:p-10 cursor-default">
+                <div className="flex items-start justify-between mb-8">
+                  <span className="font-display text-5xl text-muted-foreground/20 group-hover:text-accent/60 transition-colors leading-none">
+                    {service.number}
+                  </span>
+                  <service.icon className="h-5 w-5 text-muted-foreground group-hover:text-accent group-hover:scale-110 transition-all mt-1" />
+                </div>
+                <h3 className="text-foreground font-medium text-base tracking-wide mb-3">
+                  {service.title}
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {service.description}
+                </p>
+              </Spotlight>
             </motion.div>
           ))}
         </div>

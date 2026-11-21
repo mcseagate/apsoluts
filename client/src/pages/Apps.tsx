@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Apple, Smartphone } from "lucide-react";
 import { apps, appStoreUrl, playStoreUrl, type AppListing } from "@/data/apps";
+import ShaderField from "@/components/fx/ShaderField";
+import Spotlight from "@/components/fx/Spotlight";
 
 type Platform = "ios" | "android" | "other";
 
@@ -66,7 +68,7 @@ const AppCard = ({ app, platform }: { app: AppListing; platform: Platform }) => 
   const androidPrimary = platform === "android";
 
   return (
-    <article className="flex flex-col border border-border bg-card p-6">
+    <Spotlight as="article" tilt className="flex flex-col border border-border bg-card p-6">
       <div className="flex items-start gap-4">
         <img
           src={`/apps/${app.slug}.jpg`}
@@ -88,7 +90,7 @@ const AppCard = ({ app, platform }: { app: AppListing; platform: Platform }) => 
         {showIos && <StoreButton store="ios" href={ios} appName={app.name} primary={iosPrimary} />}
         {showAndroid && <StoreButton store="android" href={android} appName={app.name} primary={androidPrimary} />}
       </div>
-    </article>
+    </Spotlight>
   );
 };
 
@@ -112,8 +114,14 @@ const Apps = () => {
         : "Open this page on your phone to go straight to your store, or pick one below.";
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="border-b border-border">
+    <div className="relative min-h-screen overflow-x-clip bg-background text-foreground">
+      {/* the same live red field as the home page, fading into the cards */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[620px]">
+        <ShaderField intensity={0.85} className="h-full" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background" />
+      </div>
+
+      <div className="relative z-10 border-b border-border/60">
         <div className="max-w-6xl mx-auto px-6 md:px-8 py-8 flex items-center justify-between">
           <Link
             to="/"
@@ -130,13 +138,13 @@ const Apps = () => {
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-6 md:px-8 py-16 md:py-24">
+      <main className="relative z-10 max-w-6xl mx-auto px-6 md:px-8 py-16 md:py-24">
         <div className="mb-14">
           <p className="text-[10px] tracking-[0.35em] uppercase text-muted-foreground mb-4">Apps</p>
-          <h1 className="font-display text-5xl md:text-6xl leading-none tracking-wide text-foreground mb-6">
+          <h1 className="font-display text-6xl md:text-8xl leading-none tracking-wide text-foreground mb-6">
             OUR
             <br />
-            APPS
+            <span className="text-outline">APPS</span>
           </h1>
           <p className="text-muted-foreground text-sm max-w-xl">{intro}</p>
         </div>
