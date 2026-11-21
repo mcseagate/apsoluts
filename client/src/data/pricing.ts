@@ -2,20 +2,24 @@
 // rate, which has cents. Change a number here and the ladder, the estimator
 // and the headline figures all follow.
 
-export type ServiceGroup = "Websites" | "Software" | "Real-time & play" | "Mobile";
+export type ServiceGroup = "Websites" | "Software" | "Real-time & play" | "Mobile & desktop";
 
 export interface Service {
   id: string;
   group: ServiceGroup;
   name: string;
   blurb: string;
-  /** Low and high end of the range, in dollars (per hour when `unit` is "hour"). */
+  /** Low and high end of the range, in dollars (per hour when `unit` is "hour").
+   *  Ignored when `unit` is "whatsapp": those are quoted over WhatsApp and never summed. */
   min: number;
   max: number;
-  unit: "project" | "hour";
+  unit: "project" | "hour" | "whatsapp";
   /** Technologies this kind of work is usually built with. */
   tech: string[];
 }
+
+// Shared by the Windows service card on the home page and the pricing ladder.
+export const windowsTech = [".NET", "WinUI", "Signed installer", "Microsoft Store"];
 
 export const services: Service[] = [
   {
@@ -110,7 +114,7 @@ export const services: Service[] = [
   },
   {
     id: "mobile",
-    group: "Mobile",
+    group: "Mobile & desktop",
     name: "Mobile app development (iOS and Android)",
     blurb: "Native, Flutter or Expo: one app or both stores, shipped through App Store and Google Play.",
     min: 500,
@@ -118,9 +122,19 @@ export const services: Service[] = [
     unit: "project",
     tech: ["SwiftUI", "Kotlin", "Jetpack Compose", "Flutter", "Expo", "React Native"],
   },
+  {
+    id: "windows",
+    group: "Mobile & desktop",
+    name: "Windows software development",
+    blurb: "Desktop applications for Windows, from internal business tools to commercial software, delivered with an installer or a store listing.",
+    min: 0,
+    max: 0,
+    unit: "whatsapp",
+    tech: windowsTech,
+  },
 ];
 
-export const groups: ServiceGroup[] = ["Websites", "Software", "Real-time & play", "Mobile"];
+export const groups: ServiceGroup[] = ["Websites", "Software", "Real-time & play", "Mobile & desktop"];
 
 export interface TechGroup {
   title: string;
@@ -131,9 +145,9 @@ export interface TechGroup {
 // The tools the studio actually builds with, grouped by the layer they sit in.
 export const techGroups: TechGroup[] = [
   {
-    title: "Mobile",
-    note: "Native when it matters, cross-platform when it counts.",
-    items: ["SwiftUI", "Kotlin", "Jetpack Compose", "Flutter", "Expo", "React Native"],
+    title: "Mobile & desktop",
+    note: "Native when it matters, cross-platform when it counts, and Windows for the desktop.",
+    items: ["SwiftUI", "Kotlin", "Jetpack Compose", "Flutter", "Expo", "React Native", ".NET", "WinUI"],
   },
   {
     title: "Web front end",
@@ -168,7 +182,7 @@ export const techGroups: TechGroup[] = [
   {
     title: "Ship & run",
     note: "From first commit to production.",
-    items: ["Vercel", "Render", "Fly.io", "Cloudflare", "GitHub Actions", "App Store Connect", "Google Play Console"],
+    items: ["Vercel", "Render", "Fly.io", "Cloudflare", "GitHub Actions", "App Store Connect", "Google Play Console", "Signed installer", "Microsoft Store"],
   },
 ];
 

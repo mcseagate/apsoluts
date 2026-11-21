@@ -34,7 +34,7 @@ const Footer = () => {
               APEX ROOT
             </p>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Building modern, user-friendly mobile and web applications for businesses
+              Building modern, user-friendly mobile, web and Windows applications for businesses
               and entrepreneurs. Turning ideas into digital experiences.
             </p>
             <LiveStatus className="mt-6" />

@@ -56,7 +56,7 @@ const Hero = () => {
           className="mb-8 inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.35em] text-foreground/70"
         >
           <span aria-hidden className="h-px w-8 bg-accent" />
-          Mobile and Web App Development · Cedar Hill, TX
+          Mobile, Web and Windows Development · Cedar Hill, TX
           <span aria-hidden className="h-px w-8 bg-accent" />
         </motion.p>
 
@@ -84,7 +84,7 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.8 }}
           className="mx-auto mt-8 max-w-lg text-sm leading-relaxed tracking-wide text-foreground/70 md:text-base"
         >
-          Apex Root Solutions LLC engineers mobile and web applications that transform businesses and connect brands to customers.
+          Apex Root Solutions LLC engineers mobile, web and Windows applications that transform businesses and connect brands to customers.
         </motion.p>
 
         <motion.div

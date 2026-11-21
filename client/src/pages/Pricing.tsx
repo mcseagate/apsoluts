@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ArrowRight, Check, Minus, Phone, Plus, RotateCcw } from "lucide-react";
 import ShaderField from "@/components/fx/ShaderField";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
+import { WHATSAPP_DISPLAY, WINDOWS_MESSAGE, whatsappUrl } from "@/data/contact";
 import {
   allTech,
   groups,
@@ -67,8 +69,10 @@ function useTween(target: number) {
   return value;
 }
 
-const priceText = (s: Service) =>
-  s.unit === "hour" ? `${money(s.min)}–${money(s.max)}/hour` : `${money(s.min)}–${money(s.max)}`;
+const priceText = (s: Service) => {
+  if (s.unit === "whatsapp") return "WHATSAPP US";
+  return s.unit === "hour" ? `${money(s.min)}–${money(s.max)}/hour` : `${money(s.min)}–${money(s.max)}`;
+};
 
 const eyebrow = "text-[10px] tracking-[0.35em] uppercase text-muted-foreground";
 
@@ -85,8 +89,10 @@ interface RowProps {
 
 const LadderRow = ({ service, index, selected, onToggle, hours, onHours }: RowProps) => {
   const isHourly = service.unit === "hour";
-  const left = pos(service.min);
-  const width = pos(service.max) - left;
+  const isChat = service.unit === "whatsapp";
+  // WhatsApp rows have no range, so they never touch the log scale
+  const left = isChat ? 0 : pos(service.min);
+  const width = isChat ? 0 : pos(service.max) - left;
 
   return (
     <li className="border-b border-border last:border-b-0">
@@ -132,9 +138,9 @@ const LadderRow = ({ service, index, selected, onToggle, hours, onHours }: RowPr
         </div>
 
         {/* the bar sits on the same axis as the gridlines behind the list */}
-        {isHourly ? (
+        {isHourly || isChat ? (
           <p className="mt-5 text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">
-            Billed by the hour, so it sits off the ladder
+            {isChat ? "Quoted individually, so it sits off the ladder" : "Billed by the hour, so it sits off the ladder"}
           </p>
         ) : (
           <div className="mt-5 h-3 w-full bg-muted/70" aria-hidden>
@@ -167,6 +173,30 @@ const LadderRow = ({ service, index, selected, onToggle, hours, onHours }: RowPr
 
       {/* kept outside the toggle button: buttons cannot nest */}
       <AnimatePresence initial={false}>
+        {isChat && selected && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="relative z-10 overflow-hidden bg-card shadow-[inset_2px_0_0_0_hsl(var(--accent))]"
+          >
+            <div className="flex flex-wrap items-center gap-4 px-5 pb-6 pl-14">
+              <span className="text-xs text-muted-foreground">
+                Windows projects vary too much to price from a list. Tell us what you need and we will quote it.
+              </span>
+              <a
+                href={whatsappUrl(WINDOWS_MESSAGE)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-accent px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.18em] text-accent-foreground transition-colors hover:bg-accent/85"
+              >
+                <WhatsAppIcon size={16} />
+                WhatsApp {WHATSAPP_DISPLAY}
+              </a>
+            </div>
+          </motion.div>
+        )}
         {isHourly && selected && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
@@ -237,16 +267,20 @@ const Pricing = () => {
 
   const chosen = useMemo(() => services.filter((s) => picked[s.id]), [picked]);
 
+  // Call-us services are listed in the estimate but add nothing to the sum.
+  const priced = useMemo(() => chosen.filter((s) => s.unit !== "whatsapp"), [chosen]);
+  const chatOnes = useMemo(() => chosen.filter((s) => s.unit === "whatsapp"), [chosen]);
+
   const { low, high } = useMemo(() => {
     let lo = 0;
     let hi = 0;
-    for (const s of chosen) {
+    for (const s of priced) {
       const qty = s.unit === "hour" ? hours : 1;
       lo += s.min * qty;
       hi += s.max * qty;
     }
     return { low: lo, high: hi };
-  }, [chosen, hours]);
+  }, [priced, hours]);
 
   const shownLow = useTween(low);
   const shownHigh = useTween(high);
@@ -255,6 +289,7 @@ const Pricing = () => {
 
   const mailto = useMemo(() => {
     const lines = chosen.map((s) => {
+      if (s.unit === "whatsapp") return `- ${s.name}: price on request`;
       if (s.unit === "hour") return `- ${s.name}: ${hours} hours (${money(s.min * hours)}-${money(s.max * hours)})`;
       return `- ${s.name}: ${money(s.min)}-${money(s.max)}`;
     });
@@ -263,15 +298,17 @@ const Pricing = () => {
       "",
       "I built this estimate on your pricing page:",
       ...lines,
-      `Total range: ${money(low)}-${money(high)}`,
+      priced.length
+        ? `Total range: ${money(low)}-${money(high)}${chatOnes.length ? " (plus the items priced on request)" : ""}`
+        : "Total range: to be discussed",
       "",
       "A little about my project:",
       "",
     ].join("\n");
     return `mailto:contact@apsoluts.com?subject=${encodeURIComponent("Project estimate")}&body=${encodeURIComponent(body)}`;
-  }, [chosen, hours, low, high]);
+  }, [chosen, priced, chatOnes, hours, low, high]);
 
-  // Continues the running index across groups so rows read 01 to 10.
+  // Continues the running index across groups, one number per service.
   let counter = -1;
 
   const half = Math.ceil(allTech.length / 2);
@@ -454,12 +491,21 @@ const Pricing = () => {
                       ? `Your estimate · ${chosen.length} ${chosen.length === 1 ? "service" : "services"}`
                       : "Your estimate"}
                   </p>
-                  {chosen.length ? (
-                    <p className="mt-1 font-display text-4xl tracking-wide text-foreground md:text-5xl">
-                      {money(Math.round(shownLow))}
-                      <span className="mx-2 text-muted-foreground/60">–</span>
-                      <span className="text-accent">{money(Math.round(shownHigh))}</span>
-                    </p>
+                  {priced.length ? (
+                    <>
+                      <p className="mt-1 font-display text-4xl tracking-wide text-foreground md:text-5xl">
+                        {money(Math.round(shownLow))}
+                        <span className="mx-2 text-muted-foreground/60">–</span>
+                        <span className="text-accent">{money(Math.round(shownHigh))}</span>
+                      </p>
+                      {chatOnes.length > 0 && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Plus {chatOnes.map((s) => s.name.toLowerCase()).join(", ")}, priced over WhatsApp
+                        </p>
+                      )}
+                    </>
+                  ) : chatOnes.length ? (
+                    <p className="mt-1 font-display text-4xl tracking-wide text-accent md:text-5xl">WHATSAPP US</p>
                   ) : (
                     <p className="mt-2 text-sm text-muted-foreground">Select a service above to start adding up.</p>
                   )}
@@ -478,6 +524,17 @@ const Pricing = () => {
                       <RotateCcw className="h-3.5 w-3.5" aria-hidden />
                       Clear
                     </button>
+                  )}
+                  {chatOnes.length > 0 && (
+                    <a
+                      href={whatsappUrl(WINDOWS_MESSAGE)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 border border-foreground/40 px-5 py-3 text-[11px] uppercase tracking-[0.18em] text-foreground transition-colors hover:bg-foreground hover:text-background"
+                    >
+                      <WhatsAppIcon size={16} />
+                      WhatsApp us
+                    </a>
                   )}
                   {chosen.length > 0 ? (
                     <a
