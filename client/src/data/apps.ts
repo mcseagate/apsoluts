@@ -64,5 +64,7 @@ export const apps: AppListing[] = [
     category: "Games",
     description: "A bubble-shooter with chain reactions, bank shots and combos across ever harder boards.",
     appStoreId: "6775609501",
+    // The Play package is permanent and differs from the iOS bundle ID (com.orbpop.app).
+    playPackage: "app.rork.orbpop",
   },
 ];
