@@ -10,6 +10,7 @@ import Subscribers from "./pages/Subscribers";
 import Apps from "./pages/Apps";
 import Pricing from "./pages/Pricing";
 import Quote from "./pages/Quote";
+import AppDevelopment from "./pages/AppDevelopment";
 import Invoice from "./pages/Invoice";
 import AdminBilling from "./pages/AdminBilling";
 import SiteEffects from "./components/fx/SiteEffects";
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/apps" element={<Apps />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/web-app-landing" element={<AppDevelopment />} />
           <Route path="/quote" element={<Quote />} />
           <Route path="/invoice" element={<Invoice />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
