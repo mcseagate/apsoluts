@@ -67,12 +67,19 @@ const ScrollToTop = () => {
   return null;
 };
 
-const SiteEffects = () => (
-  <>
-    <ScrollToTop />
-    <ScrollProgress />
-    <CursorGlow />
-  </>
-);
+// Focused pages (the ad landing page) keep the scroll reset but skip the decoration.
+const QUIET_ROUTES = ["/app-development"];
+
+const SiteEffects = () => {
+  const { pathname } = useLocation();
+  const quiet = QUIET_ROUTES.includes(pathname);
+  return (
+    <>
+      <ScrollToTop />
+      {!quiet && <ScrollProgress />}
+      {!quiet && <CursorGlow />}
+    </>
+  );
+};
 
 export default SiteEffects;
