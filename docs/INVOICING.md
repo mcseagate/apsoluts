@@ -99,8 +99,12 @@ The site has no client login, so each invoice has a private link:
 ### 1. Run the migration
 
 ```bash
-cd server && npm run migrate     # needs MONGO_DB_URL in server/.env, or run it from the Render shell
+cd server && npm run migrate
 ```
+
+Locally this reads `MONGO_DB_URL` from `server/.env`. On Render, open the service's **Shell** tab and run
+the same command from the `server` directory: there is no `.env` file there, so it uses the service's
+environment variables. Success prints `Applied 1 migration(s).`; repeating it prints `Nothing to apply.`
 
 It creates the billing collections and their unique indexes and is safe to repeat.
 
