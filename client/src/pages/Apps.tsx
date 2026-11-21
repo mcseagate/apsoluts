@@ -30,11 +30,17 @@ const StoreButton = ({ store, href, appName, primary }: StoreButtonProps) => {
   const Icon = store === "ios" ? Apple : Smartphone;
   const label = store === "ios" ? "App Store" : "Google Play";
 
+  // Same shape and size as a live button, but grayed out and not clickable.
   if (!href) {
     return (
-      <span className="flex items-center justify-center gap-2 border border-border px-4 py-3 text-[10px] tracking-[0.2em] uppercase text-muted-foreground/60">
-        <Icon className="h-3.5 w-3.5" aria-hidden />
-        {label}: not yet available
+      <span
+        role="link"
+        aria-disabled="true"
+        aria-label={`${appName} is not yet available on ${label}`}
+        className="flex cursor-not-allowed select-none items-center justify-center gap-2 border border-dashed border-border bg-muted/40 px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground/45"
+      >
+        <Icon className="h-4 w-4" aria-hidden />
+        <span className="whitespace-nowrap">{store === "ios" ? "Not on the App Store" : "Not on Google Play"}</span>
       </span>
     );
   }
@@ -60,10 +66,9 @@ const AppCard = ({ app, platform }: { app: AppListing; platform: Platform }) => 
   const ios = app.appStoreId ? appStoreUrl(app.appStoreId) : undefined;
   const android = app.playPackage ? playStoreUrl(app.playPackage) : undefined;
 
-  // On a phone only that phone's store is shown; elsewhere both are, with the
-  // App Store first.
-  const showIos = platform !== "android";
-  const showAndroid = platform !== "ios";
+  // Both stores are always listed. The visitor's own store comes first and is
+  // the filled button; on desktop the App Store leads.
+  const androidFirst = platform === "android";
   const iosPrimary = platform !== "android";
   const androidPrimary = platform === "android";
 
@@ -86,9 +91,9 @@ const AppCard = ({ app, platform }: { app: AppListing; platform: Platform }) => 
 
       <p className="mt-5 mb-6 flex-1 text-sm leading-relaxed text-muted-foreground">{app.description}</p>
 
-      <div className="flex flex-col gap-3">
-        {showIos && <StoreButton store="ios" href={ios} appName={app.name} primary={iosPrimary} />}
-        {showAndroid && <StoreButton store="android" href={android} appName={app.name} primary={androidPrimary} />}
+      <div className={`flex gap-3 ${androidFirst ? "flex-col-reverse" : "flex-col"}`}>
+        <StoreButton store="ios" href={ios} appName={app.name} primary={iosPrimary} />
+        <StoreButton store="android" href={android} appName={app.name} primary={androidPrimary} />
       </div>
     </Spotlight>
   );
@@ -108,9 +113,9 @@ const Apps = () => {
 
   const intro =
     platform === "ios"
-      ? "Tap an app to open it in the App Store."
+      ? "Tap an app's App Store button to install it. Google Play is listed too."
       : platform === "android"
-        ? "Tap an app to open it on Google Play."
+        ? "Tap an app's Google Play button to install it. The App Store is listed too."
         : "Open this page on your phone to go straight to your store, or pick one below.";
 
   return (

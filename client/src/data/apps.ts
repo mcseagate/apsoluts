@@ -1,5 +1,13 @@
 // The apps listed on /apps. Add a store field only when the app is live there:
-// the page shows a "not available yet" note for a store that is left out.
+// the page shows a grayed-out "not yet available" button for a store that is
+// left out.
+//
+// Checked 2026-11-21 against Apple's lookup API (every App Store id below
+// resolves, and the developer has no other iOS apps in the listing) and the
+// Apsoluts developer page on Google Play (every package below is listed).
+// Not found, so left grayed out: FoodIntel on the App Store, LinguaGo on Google
+// Play (its candidate packages app.rork.linguago and
+// com.apexrootsolutions.linguago both return 404).
 //
 //   appStoreId   the number after "id" in the App Store URL
 //   playPackage  the Android package name (the "id=" in the Play Store URL)
