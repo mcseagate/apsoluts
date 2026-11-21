@@ -46,8 +46,9 @@ services:
         sync: false
       - key: ADMIN_TOKEN_SECRET
         generateValue: true
-      # Invoicing and payments (docs/INVOICING.md). Stripe keys are secrets; use
-      # TEST keys until the checklist in that document is complete.
+      # Invoicing and payments (docs/INVOICING.md). Stripe keys are secrets. Production
+      # runs in live mode (also needs STRIPE_ENABLE_LIVE=true). A blueprint only creates
+      # INVOICE_LINK_SECRET on first sync, so on an existing service add it by hand.
       - key: BILLING_CURRENCY
         value: USD
       - key: SITE_URL
