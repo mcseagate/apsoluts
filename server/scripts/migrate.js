@@ -9,6 +9,16 @@ import { connectDb } from "../src/config/db.js";
 // again (for example on every deploy) does nothing new.
 //
 //   npm run migrate
+//
+// Locally it reads server/.env; on Render there is no .env file and the
+// service's environment variables are used as they are (a variable that is
+// already set is never overridden by the file).
+
+try {
+  process.loadEnvFile(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", ".env"));
+} catch {
+  // No .env file: rely on the environment.
+}
 
 const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "migrations");
 
