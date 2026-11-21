@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import About from "@/components/landing/About";
@@ -11,6 +13,16 @@ import Footer from "@/components/landing/Footer";
 import WhatsAppButton from "@/components/landing/WhatsAppButton";
 
 const Index = () => {
+  // Links from other pages such as "/#contact" arrive here with a hash.
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!hash) return;
+    const timer = window.setTimeout(() => {
+      document.querySelector(hash)?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
+    return () => window.clearTimeout(timer);
+  }, [hash]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

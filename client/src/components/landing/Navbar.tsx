@@ -76,6 +76,12 @@ const Navbar = () => {
               >
                 Apps
               </Link>
+              <Link
+                to="/pricing"
+                className="text-[11px] tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300"
+              >
+                Pricing
+              </Link>
             </div>
 
             <div className="hidden lg:flex items-center gap-6">
@@ -136,6 +142,13 @@ const Navbar = () => {
             className="font-display text-3xl sm:text-4xl tracking-[0.15em] text-foreground hover:text-muted-foreground transition-colors"
           >
             APPS
+          </Link>
+          <Link
+            to="/pricing"
+            onClick={() => setMobileOpen(false)}
+            className="font-display text-3xl sm:text-4xl tracking-[0.15em] text-foreground hover:text-muted-foreground transition-colors"
+          >
+            PRICING
           </Link>
           <div className="mt-6 flex flex-col items-center gap-5">
             <a
