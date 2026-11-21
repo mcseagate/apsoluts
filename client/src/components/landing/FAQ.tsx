@@ -28,6 +28,11 @@ const faqs = [
       "Yes, we develop for both iOS and Android platforms. Depending on your needs and budget, we can build native apps for each platform or use cross-platform technologies like React Native or Flutter.",
   },
   {
+    question: "Do you build Windows desktop software?",
+    answer:
+      "Yes. We build Windows applications, from internal business tools to commercial software, and take them all the way to a signed installer or a Microsoft Store listing. A Windows app can share the same API and database as your mobile and web apps, so one backend can serve every platform.",
+  },
+  {
     question: "Do you provide post-launch support and maintenance?",
     answer:
       "Absolutely. We offer ongoing maintenance and support packages to keep your app updated, secure, and performing at its best — including bug fixes, OS compatibility updates, feature enhancements, and performance monitoring.",

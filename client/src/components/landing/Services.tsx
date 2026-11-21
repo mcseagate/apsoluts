@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import Spotlight from "@/components/fx/Spotlight";
 import {
   Smartphone,
+  Monitor,
   Palette,
   Code,
   TestTube,
@@ -15,63 +16,61 @@ import {
 const services = [
   {
     icon: Smartphone,
-    number: "01",
     title: "Mobile App Development",
     description:
       "Custom iOS and Android applications built for performance, scale, and real-world users.",
   },
   {
+    icon: Monitor,
+    title: "Windows Software Development",
+    isNew: true,
+    description:
+      "Desktop applications for Windows, from internal business tools to polished commercial software, delivered with a signed installer or a Microsoft Store listing.",
+  },
+  {
     icon: Globe,
-    number: "02",
     title: "Web Design & Development",
     description:
       "Modern, fast, and responsive websites and web applications built to convert visitors into customers.",
   },
   {
     icon: Palette,
-    number: "03",
     title: "UI/UX Design",
     description:
       "Intuitive, visually refined interfaces crafted to maximize engagement and retention.",
   },
   {
     icon: Code,
-    number: "04",
     title: "App Consultation",
     description:
       "Strategic roadmapping to align your vision with market reality and technical feasibility.",
   },
   {
     icon: TestTube,
-    number: "05",
     title: "Testing & QA",
     description:
       "Rigorous quality assurance across devices and platforms before every release.",
   },
   {
     icon: RefreshCw,
-    number: "06",
     title: "Maintenance & Updates",
     description:
       "Continuous support and optimization to keep your app at peak performance.",
   },
   {
     icon: Rocket,
-    number: "07",
     title: "Launch Strategy",
     description:
-      "App store optimization and go-to-market execution for maximum day-one impact.",
+      "App store and Windows distribution, plus go-to-market execution for maximum day-one impact.",
   },
   {
     icon: Server,
-    number: "08",
     title: "API & Backend Development",
     description:
       "Scalable server-side systems, databases, and third-party integrations that power your product.",
   },
   {
     icon: ShoppingCart,
-    number: "09",
     title: "E-Commerce Development",
     description:
       "Full-featured online stores with secure payment processing, inventory management, and seamless checkout.",
@@ -100,8 +99,8 @@ const Services = () => {
             </h2>
           </div>
           <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
-            Full-stack digital solutions — from mobile apps and websites to
-            strategy, design, and beyond.
+            Full-stack digital solutions — from mobile and Windows apps to
+            websites, strategy, design, and beyond.
           </p>
         </motion.div>
 
@@ -118,12 +117,17 @@ const Services = () => {
               <Spotlight className="group h-full p-8 md:p-9 lg:p-10 cursor-default">
                 <div className="flex items-start justify-between mb-8">
                   <span className="font-display text-5xl text-muted-foreground/20 group-hover:text-accent/60 transition-colors leading-none">
-                    {service.number}
+                    {String(i + 1).padStart(2, "0")}
                   </span>
                   <service.icon className="h-5 w-5 text-muted-foreground group-hover:text-accent group-hover:scale-110 transition-all mt-1" />
                 </div>
-                <h3 className="text-foreground font-medium text-base tracking-wide mb-3">
+                <h3 className="text-foreground font-medium text-base tracking-wide mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
                   {service.title}
+                  {service.isNew && (
+                    <span className="border border-accent px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.25em] text-accent">
+                      New
+                    </span>
+                  )}
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   {service.description}
@@ -131,6 +135,23 @@ const Services = () => {
               </Spotlight>
             </motion.div>
           ))}
+
+          {/* closes the grid on every breakpoint: ten cards plus this two-wide tile */}
+          <button
+            type="button"
+            onClick={() => document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth" })}
+            className="group flex flex-col justify-between gap-10 bg-accent p-8 text-left text-accent-foreground transition-colors hover:bg-accent/90 md:col-span-2 md:p-9 lg:p-10"
+          >
+            <span className="font-display text-4xl leading-none tracking-wide md:text-5xl">
+              SOMETHING ELSE IN MIND?
+            </span>
+            <span className="flex items-center justify-between gap-6 text-sm">
+              Tell us what you need built and we will tell you how.
+              <span aria-hidden className="text-2xl transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </span>
+          </button>
         </div>
       </div>
     </section>

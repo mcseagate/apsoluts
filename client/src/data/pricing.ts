@@ -131,9 +131,9 @@ export interface TechGroup {
 // The tools the studio actually builds with, grouped by the layer they sit in.
 export const techGroups: TechGroup[] = [
   {
-    title: "Mobile",
-    note: "Native when it matters, cross-platform when it counts.",
-    items: ["SwiftUI", "Kotlin", "Jetpack Compose", "Flutter", "Expo", "React Native"],
+    title: "Mobile & desktop",
+    note: "Native when it matters, cross-platform when it counts, and Windows for the desktop.",
+    items: ["SwiftUI", "Kotlin", "Jetpack Compose", "Flutter", "Expo", "React Native", ".NET", "WinUI"],
   },
   {
     title: "Web front end",
@@ -168,7 +168,7 @@ export const techGroups: TechGroup[] = [
   {
     title: "Ship & run",
     note: "From first commit to production.",
-    items: ["Vercel", "Render", "Fly.io", "Cloudflare", "GitHub Actions", "App Store Connect", "Google Play Console"],
+    items: ["Vercel", "Render", "Fly.io", "Cloudflare", "GitHub Actions", "App Store Connect", "Google Play Console", "Microsoft Store"],
   },
 ];
 

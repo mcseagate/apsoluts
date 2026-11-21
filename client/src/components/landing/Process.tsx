@@ -25,7 +25,7 @@ const steps: Step[] = [
   {
     number: "02",
     title: "Design",
-    body: "Screens, flows and a visual system you can click through on your own phone before we commit to building them.",
+    body: "Screens, flows and a visual system you can click through on your own phone or PC before we commit to building them.",
     log: [
       { text: "$ apex design --prototype" },
       { text: "flows drawn, screens composed" },
@@ -35,9 +35,9 @@ const steps: Step[] = [
   {
     number: "03",
     title: "Build",
-    body: "Native, Flutter or Expo on the front, a clean API and database behind it. You see a working build every week.",
+    body: "Native, Flutter or Expo for phones, a native Windows application for the desktop, and one clean API and database behind them all. You see a working build every week.",
     log: [
-      { text: "$ apex build --ios --android --web" },
+      { text: "$ apex build --ios --android --web --windows" },
       { text: "api, database and auth online" },
       { text: "weekly builds delivered", ok: true },
     ],
@@ -45,9 +45,9 @@ const steps: Step[] = [
   {
     number: "04",
     title: "Test",
-    body: "Real devices, real networks and the awkward cases: rotation, slow connections, a phone that is almost out of battery.",
+    body: "Real devices, real networks and the awkward cases: rotation, slow connections, a phone that is almost out of battery, a Windows PC that is a few years old.",
     log: [
-      { text: "$ apex test --devices --offline --a11y" },
+      { text: "$ apex test --devices --windows --offline" },
       { text: "devices, networks and edge cases run" },
       { text: "release candidate signed off", ok: true },
     ],
@@ -55,10 +55,10 @@ const steps: Step[] = [
   {
     number: "05",
     title: "Ship",
-    body: "We prepare the store listings, handle review and push the release live, then stay on to keep it fast and current.",
+    body: "We prepare the store listings or a signed Windows installer, handle review and push the release live, then stay on to keep it fast and current.",
     log: [
-      { text: "$ apex ship --app-store --google-play" },
-      { text: "listings prepared, review passed" },
+      { text: "$ apex ship --app-store --google-play --windows" },
+      { text: "listings and installer prepared" },
       { text: "live. monitoring on", ok: true },
     ],
   },

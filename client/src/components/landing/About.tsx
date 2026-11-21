@@ -59,8 +59,8 @@ const About = () => {
             </h2>
             <p className="text-muted-foreground leading-relaxed text-base">
               Apex Root Solutions LLC is a technology company rooted in
-              innovation. We specialize in designing and developing mobile and
-              web applications that help businesses and entrepreneurs connect
+              innovation. We specialize in designing and developing mobile,
+              web and Windows applications that help businesses and entrepreneurs connect
               with their customers, streamline operations, and accelerate
               growth.
             </p>
