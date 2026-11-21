@@ -81,6 +81,14 @@ const Footer = () => {
                   Our Apps
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/pricing"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide"
+                >
+                  Pricing
+                </Link>
+              </li>
             </ul>
           </div>
 
