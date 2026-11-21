@@ -158,6 +158,25 @@ const Apps = () => {
           {apps.map((app) => (
             <AppCard key={app.slug} app={app} platform={platform} />
           ))}
+
+          {/* Completes the grid: with eight apps this fills the last slot on
+              three columns and the whole last row on two. */}
+          <Link
+            to="/#contact"
+            className="group flex flex-col justify-between gap-10 bg-accent p-6 text-accent-foreground transition-colors hover:bg-accent/90 md:col-span-2 lg:col-span-1"
+          >
+            <span className="font-display text-4xl leading-none tracking-wide md:text-5xl">
+              HAVE AN APP
+              <br />
+              IN MIND?
+            </span>
+            <span className="flex items-center justify-between gap-6 text-sm">
+              We build for iPhone, Android, the web and Windows.
+              <span aria-hidden className="text-2xl transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </span>
+          </Link>
         </div>
 
         <p className="mt-14 text-xs text-muted-foreground">
