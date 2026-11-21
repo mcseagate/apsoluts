@@ -46,3 +46,29 @@ services:
         sync: false
       - key: ADMIN_TOKEN_SECRET
         generateValue: true
+      # Invoicing and payments (docs/INVOICING.md). Stripe keys are secrets; use
+      # TEST keys until the checklist in that document is complete.
+      - key: BILLING_CURRENCY
+        value: USD
+      - key: SITE_URL
+        value: https://www.apsoluts.com
+      - key: INVOICE_LINK_SECRET
+        generateValue: true
+      - key: BUSINESS_LEGAL_NAME
+        sync: false
+      - key: BUSINESS_ADDRESS
+        sync: false
+      - key: BUSINESS_EMAIL
+        sync: false
+      - key: BUSINESS_PHONE
+        sync: false
+      - key: BUSINESS_TAX_ID
+        sync: false
+      - key: INVOICE_TAX_NOTE
+        sync: false
+      - key: ADMIN_NOTIFY_EMAIL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false

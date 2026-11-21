@@ -16,6 +16,9 @@ Professional business website for Apex Root Solutions LLC, a software and techno
 - **Footer** — Company info, quick links, contact details, social icons, legal links
 - **WhatsApp Button** — Floating green button opens WhatsApp chat with pre-filled message
 
+Also: **/quote** (request a custom-project quote), **/invoice** (a client's private invoice page with Stripe checkout) and
+**/admin/billing** (quotes, projects, invoices). See [docs/INVOICING.md](docs/INVOICING.md).
+
 ## Tech Stack
 
 - **Frontend:** React 18, Vite, Tailwind CSS, shadcn/ui, Framer Motion, React Hook Form, Zod
@@ -77,6 +80,13 @@ Run locally: `cd server && cp .env.example .env && npm ci && npm run dev` (port 
 - `POST /api/newsletter` — Newsletter signup (email)
 - `POST /api/auth/login` — Admin sign-in; returns a 12-hour signed token
 - `GET /api/newsletter` — Subscriber list for `/admin/subscribers` (Bearer token required)
+- `POST /api/quotes` — Public quote request form (spam-protected)
+- `GET /api/public/invoice`, `POST /api/public/invoice/checkout` — Client invoice view and Stripe checkout (`X-Invoice-Token` header)
+- `POST /api/webhooks/stripe` — Stripe webhook (signature verified)
+- `/api/admin/*` — Quotes, projects, invoices (Bearer admin token required on every route)
+
+Billing setup, Stripe test-mode steps and the go-live checklist are in [docs/INVOICING.md](docs/INVOICING.md).
+Server tests: `cd server && npm test`.
 
 ## Contact Details
 
