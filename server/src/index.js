@@ -37,6 +37,13 @@ app.use("*", logger());
 // Health check endpoint
 app.get("/health", (c) => c.json({ status: "ok" }));
 
+// Same check under /api so the site can reach it through the same-origin
+// rewrite; the home page shows its round-trip time as a live status readout.
+app.get("/api/health", (c) => {
+  c.header("Cache-Control", "no-store");
+  return c.json({ status: "ok" });
+});
+
 // Global error handler
 app.onError((err, c) => {
   console.error("[Hono Server Error]:", err);

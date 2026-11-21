@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ArrowRight, Check, Minus, Phone, Plus, RotateCcw } from "lucide-react";
+import ShaderField from "@/components/fx/ShaderField";
 import {
   allTech,
   groups,
@@ -315,14 +316,10 @@ const Pricing = () => {
           >
             $
           </div>
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 60% 70% at 85% 30%, hsl(var(--accent) / 0.14), transparent 70%)",
-            }}
-          />
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <ShaderField intensity={0.7} className="h-full" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background" />
+          </div>
 
           <div className="relative mx-auto max-w-6xl px-6 py-16 md:px-8 md:py-24">
             <p className={`${eyebrow} mb-4`}>Pricing</p>

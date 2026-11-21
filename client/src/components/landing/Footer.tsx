@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import LiveStatus from "@/components/fx/LiveStatus";
 import {
   Phone,
   Mail,
@@ -23,7 +24,8 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-background border-t border-border">
+    <footer className="bg-background">
+      <div aria-hidden className="h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-16 lg:py-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-14 lg:gap-16 mb-16">
           {/* Brand */}
@@ -35,6 +37,7 @@ const Footer = () => {
               Building modern, user-friendly mobile and web applications for businesses
               and entrepreneurs. Turning ideas into digital experiences.
             </p>
+            <LiveStatus className="mt-6" />
             <div className="flex gap-3 mt-6">
               <a
                 href="https://www.facebook.com/apexrootsolutions"

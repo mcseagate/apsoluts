@@ -1,5 +1,6 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
+import Spotlight from "@/components/fx/Spotlight";
 
 const stats = [
   { value: 50, suffix: "+", label: "Projects Delivered" },
@@ -31,7 +32,7 @@ const CountUp = ({ target, suffix }: { target: number; suffix: string }) => {
   return (
     <span ref={ref}>
       {count}
-      {suffix}
+      <span className="text-accent">{suffix}</span>
     </span>
   );
 };
@@ -54,7 +55,7 @@ const About = () => {
             <h2 className="font-display text-5xl md:text-7xl lg:text-9xl leading-none tracking-wide text-foreground mb-10">
               WHO
               <br />
-              WE ARE
+              <span className="text-outline">WE ARE</span>
             </h2>
             <p className="text-muted-foreground leading-relaxed text-base">
               Apex Root Solutions LLC is a technology company rooted in
@@ -89,14 +90,16 @@ const About = () => {
                 whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: i * 0.12 }}
                 viewport={{ once: true }}
-                className="bg-background p-8 md:p-10 lg:p-12"
+                className="bg-background"
               >
-                <div className="font-display text-5xl md:text-6xl lg:text-7xl text-foreground leading-none">
-                  <CountUp target={stat.value} suffix={stat.suffix} />
-                </div>
-                <p className="mt-3 text-[10px] tracking-[0.25em] uppercase text-muted-foreground">
-                  {stat.label}
-                </p>
+                <Spotlight className="h-full p-8 md:p-10 lg:p-12">
+                  <div className="font-display text-5xl md:text-6xl lg:text-7xl text-foreground leading-none">
+                    <CountUp target={stat.value} suffix={stat.suffix} />
+                  </div>
+                  <p className="mt-3 text-[10px] tracking-[0.25em] uppercase text-muted-foreground">
+                    {stat.label}
+                  </p>
+                </Spotlight>
               </motion.div>
             ))}
           </div>

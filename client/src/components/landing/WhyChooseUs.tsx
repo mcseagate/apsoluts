@@ -50,7 +50,7 @@ const WhyChooseUs = () => {
           <h2 className="font-display text-5xl md:text-7xl lg:text-9xl leading-none tracking-wide text-foreground">
             THE APEX
             <br />
-            DIFFERENCE
+            <span className="text-outline">DIFFERENCE</span>
           </h2>
         </motion.div>
 
@@ -62,9 +62,9 @@ const WhyChooseUs = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: i * 0.08 }}
               viewport={{ once: true }}
-              className="group flex flex-col md:flex-row md:items-center gap-6 lg:gap-16 px-0 py-8 lg:py-10 hover:bg-secondary/50 transition-colors duration-300 cursor-default -mx-4 sm:-mx-6 lg:-mx-12 px-4 sm:px-6 lg:px-12"
+              className="group relative before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:origin-top before:scale-y-0 before:bg-accent before:transition-transform before:duration-300 hover:before:scale-y-100 flex flex-col md:flex-row md:items-center gap-6 lg:gap-16 px-0 py-8 lg:py-10 hover:bg-secondary/50 transition-colors duration-300 cursor-default -mx-4 sm:-mx-6 lg:-mx-12 px-4 sm:px-6 lg:px-12"
             >
-              <span className="font-display text-3xl text-foreground/20 flex-shrink-0 w-12 leading-none">
+              <span className="font-display text-3xl text-foreground/20 group-hover:text-accent transition-colors flex-shrink-0 w-12 leading-none">
                 {feature.number}
               </span>
               <h3 className="font-display text-2xl lg:text-3xl tracking-wide text-foreground flex-shrink-0 lg:w-72 leading-tight">
@@ -73,7 +73,7 @@ const WhyChooseUs = () => {
               <p className="text-muted-foreground text-sm leading-relaxed flex-1">
                 {feature.description}
               </p>
-              <span className="hidden md:block text-foreground/20 group-hover:text-foreground/50 transition-colors text-lg flex-shrink-0 font-light">
+              <span className="hidden md:block text-foreground/20 group-hover:text-accent group-hover:translate-x-1 transition-all text-lg flex-shrink-0 font-light">
                 →
               </span>
             </motion.div>

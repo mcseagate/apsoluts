@@ -59,7 +59,7 @@ const ContactSection = () => {
   });
 
   return (
-    <section id="contact" className="bg-secondary">
+    <section id="contact" className="bg-secondary overflow-x-clip">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* Left: Contact Info */}

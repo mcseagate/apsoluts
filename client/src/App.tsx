@@ -9,6 +9,8 @@ import TermsOfService from "./pages/TermsOfService";
 import Subscribers from "./pages/Subscribers";
 import Apps from "./pages/Apps";
 import Pricing from "./pages/Pricing";
+import SiteEffects from "./components/fx/SiteEffects";
+import CommandPalette from "./components/fx/CommandPalette";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -19,6 +21,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <SiteEffects />
+        <CommandPalette />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/apps" element={<Apps />} />

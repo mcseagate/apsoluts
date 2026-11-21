@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { openPalette } from "@/components/fx/CommandPalette";
 
 const navLinks = [
   { label: "About", href: "#about" },
@@ -46,7 +47,7 @@ const Navbar = () => {
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-background/95 backdrop-blur-sm border-b border-border"
+            ? "bg-background/90 backdrop-blur-md border-b border-accent/30 shadow-[0_1px_30px_-10px_hsl(var(--accent)/0.5)]"
             : "bg-transparent"
         }`}
       >
@@ -54,40 +55,49 @@ const Navbar = () => {
           <div className="flex items-center justify-between h-16 lg:h-20">
             <button
               onClick={() => scrollTo("#home")}
-              className="flex items-center gap-3 font-display text-xl tracking-[0.2em] text-foreground"
+              className="flex shrink-0 items-center gap-3 whitespace-nowrap font-display text-xl tracking-[0.2em] text-foreground"
             >
               <img src="/apex-logo.png" alt="Apex Root Logo" className="h-9 w-9 object-contain" />
               APEX ROOT
             </button>
 
-            <div className="hidden lg:flex items-center gap-10">
+            <div className="hidden lg:flex items-center gap-6 xl:gap-10">
               {navLinks.map((link) => (
                 <button
                   key={link.href}
                   onClick={() => scrollTo(link.href)}
-                  className="text-[11px] tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300"
+                  className="nav-link whitespace-nowrap text-[11px] tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300"
                 >
                   {link.label}
                 </button>
               ))}
               <Link
                 to="/apps"
-                className="text-[11px] tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300"
+                className="nav-link whitespace-nowrap text-[11px] tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300"
               >
                 Apps
               </Link>
               <Link
                 to="/pricing"
-                className="text-[11px] tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300"
+                className="nav-link whitespace-nowrap text-[11px] tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300"
               >
                 Pricing
               </Link>
             </div>
 
             <div className="hidden lg:flex items-center gap-6">
+              <button
+                type="button"
+                onClick={openPalette}
+                aria-label="Open command palette"
+                className="hidden items-center gap-2 border border-border px-2.5 py-1.5 xl:flex text-[10px] tracking-[0.15em] text-muted-foreground transition-colors hover:border-accent hover:text-foreground"
+              >
+                <Search className="h-3 w-3" aria-hidden />
+                <span>⌘K</span>
+              </button>
               <a
                 href="tel:3108496035"
-                className="text-[11px] tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                className="hidden whitespace-nowrap text-[11px] tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors xl:block"
               >
                 310-849-6035
               </a>

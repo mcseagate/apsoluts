@@ -81,3 +81,93 @@
   background: hsl(0 75% 42% / 0.3);
   color: hsl(0 0% 96%);
 }
+
+/* ---------- black and red effects ---------- */
+
+@layer components {
+  /* A red light that follows the pointer across a card. --mx and --my are set
+     by <Spotlight>; without a pointer the card is simply a flat card. */
+  .spotlight {
+    position: relative;
+    isolation: isolate;
+    --mx: 50%;
+    --my: 50%;
+  }
+  .spotlight-tilt {
+    transition: transform 0.25s ease-out;
+    will-change: transform;
+  }
+  .spotlight::before,
+  .spotlight::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+  .spotlight::before {
+    background: radial-gradient(320px circle at var(--mx) var(--my), hsl(var(--accent) / 0.16), transparent 65%);
+  }
+  .spotlight::after {
+    z-index: 1;
+    padding: 1px;
+    background: radial-gradient(220px circle at var(--mx) var(--my), hsl(var(--accent)), transparent 70%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  }
+  .spotlight:hover::before,
+  .spotlight:hover::after {
+    opacity: 1;
+  }
+
+  /* Hollow display type with a red edge. */
+  .text-outline {
+    color: transparent;
+    -webkit-text-stroke: 1.5px hsl(0 80% 52%);
+  }
+
+  /* Red-to-ember text that slowly shifts. */
+  .text-ember {
+    background: linear-gradient(100deg, hsl(0 75% 42%), hsl(8 100% 62%), hsl(0 75% 42%), hsl(8 100% 62%));
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: ember 8s linear infinite;
+  }
+
+  /* Nav links with a red underline that draws in. */
+  .nav-link {
+    position: relative;
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 1px;
+    background: hsl(var(--accent));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes ember {
+  to {
+    background-position: -300% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-ember {
+    animation: none;
+  }
+}
