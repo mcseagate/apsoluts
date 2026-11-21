@@ -8,7 +8,7 @@ import { headTags, seoPages } from "./src/data/seo";
 // JavaScript, so a page that sets its own title and social tags in React would
 // share the home page's. After the build, write a copy of index.html for each page
 // in src/data/seo.ts with that page's tags in <head>. Vercel serves a real file
-// before it applies the single-page-app rewrite, so /app-development gets its
+// before it applies the single-page-app rewrite, so /web-app-landing gets its
 // own head and then boots the same app.
 function pageHeads(): Plugin {
   const strip = [

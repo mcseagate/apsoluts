@@ -16,7 +16,7 @@ export interface PageSeo {
 }
 
 export const appDevelopmentSeo: PageSeo = {
-  path: "/app-development",
+  path: "/web-app-landing",
   title: "Web, Mobile & Windows App Development | Apex Root Solutions",
   description:
     "Custom web, iOS, Android and Windows apps built around how your business works. Agree scope and a price range before any code is written.",
