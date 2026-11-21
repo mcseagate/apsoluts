@@ -27,6 +27,14 @@ export const apps: AppListing[] = [
     playPackage: "com.apexrootsolutions.nutreoscan",
   },
   {
+    slug: "foodintel",
+    name: "FoodIntel",
+    category: "Health & Fitness",
+    description: "Scan any packaged food's barcode for a 0-100 score tuned to your goals, diet and life stage.",
+    // Android only for now; there is no App Store listing.
+    playPackage: "com.rork.foodintel",
+  },
+  {
     slug: "screenshot-inbox",
     name: "Screenshot Inbox",
     category: "Productivity",
