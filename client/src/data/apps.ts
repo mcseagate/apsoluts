@@ -5,9 +5,10 @@
 // Checked 2026-11-21 against Apple's lookup API (every App Store id below
 // resolves, and the developer has no other iOS apps in the listing) and the
 // Apsoluts developer page on Google Play (every package below is listed).
-// Not found, so left grayed out: FoodIntel on the App Store, LinguaGo on Google
-// Play (its candidate packages app.rork.linguago and
-// com.apexrootsolutions.linguago both return 404).
+// Not found, so left grayed out: FoodIntel, Berean Scroll and Bokskaper on the
+// App Store (looked up by bundle ID in 35 storefronts), LinguaGo on Google Play
+// (its candidate packages app.rork.linguago and com.apexrootsolutions.linguago
+// both return 404).
 //
 //   appStoreId   the number after "id" in the App Store URL
 //   playPackage  the Android package name (the "id=" in the Play Store URL)
@@ -74,5 +75,19 @@ export const apps: AppListing[] = [
     appStoreId: "6775609501",
     // The Play package is permanent and differs from the iOS bundle ID (com.orbpop.app).
     playPackage: "app.rork.orbpop",
+  },
+  {
+    slug: "berean-scroll",
+    name: "Berean Scroll",
+    category: "Books",
+    description: "Study the Bible word by word in Hebrew and Greek, with maps and a timeline, all available offline.",
+    playPackage: "com.bereanscroll.app",
+  },
+  {
+    slug: "bokskaper",
+    name: "Bokskaper",
+    category: "Productivity",
+    description: "Turn a recording into a finished book: transcript, chapters, edits and a PDF.",
+    playPackage: "com.apexrsol.bokskaper",
   },
 ];
