@@ -15,6 +15,7 @@ import {
   upperEnd,
   type Service,
 } from "@/data/pricing";
+import { DEFAULT_T, PRESETS, clamp01, nearPreset, scopeLabel, valueAt } from "@/lib/pricePoint";
 
 /* ---------- price ladder maths ---------- */
 
@@ -76,6 +77,123 @@ const priceText = (s: Service) => {
 
 const eyebrow = "text-[10px] tracking-[0.35em] uppercase text-muted-foreground";
 
+/* ---------- the draggable price point ---------- */
+
+const pointOf = (service: Service, t: number) =>
+  valueAt(service.min, service.max, t, service.unit === "hour" ? "linear" : "log");
+
+interface PointBarProps {
+  index: number;
+  left: number; // where this range starts on the shared axis, in %
+  width: number; // how wide the range is, in %
+  t: number;
+  onChange: (t: number) => void;
+  selected: boolean;
+  name: string;
+  valueText: string;
+}
+
+// The bar for one service, with a marker the visitor drags to say how big the
+// job is. Pointer events cover mouse, touch and pen; the marker is also a real
+// slider for the keyboard and screen readers.
+const PointBar = ({ index, left, width, t, onChange, selected, name, valueText }: PointBarProps) => {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const thumbRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  const percentAt = (clientX: number) => {
+    const el = trackRef.current;
+    if (!el) return null;
+    const rect = el.getBoundingClientRect();
+    return rect.width > 0 ? ((clientX - rect.left) / rect.width) * 100 : null;
+  };
+  const move = (clientX: number) => {
+    const percent = percentAt(clientX);
+    if (percent !== null && width > 0) onChange(clamp01((percent - left) / width));
+  };
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    const percent = percentAt(e.clientX);
+    // Only a press on, or just beside, the coloured range starts a drag.
+    if (percent === null || percent < left - 3 || percent > left + width + 3) return;
+    dragging.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    thumbRef.current?.focus({ preventScroll: true });
+    move(e.clientX);
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (dragging.current) move(e.clientX);
+  };
+  const onPointerEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    dragging.current = false;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const big = e.key === "PageUp" || e.key === "PageDown";
+    let next: number | null = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "PageUp") next = t + (big ? 0.2 : 0.05);
+    else if (e.key === "ArrowLeft" || e.key === "ArrowDown" || e.key === "PageDown") next = t - (big ? 0.2 : 0.05);
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = 1;
+    if (next !== null) {
+      e.preventDefault();
+      onChange(clamp01(next));
+    }
+  };
+
+  return (
+    <div
+      ref={trackRef}
+      className="relative mt-2.5 cursor-pointer touch-pan-y select-none py-2.5"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerEnd}
+      onPointerCancel={onPointerEnd}
+    >
+      <div className="relative h-3 w-full bg-muted/70">
+        {/* the range this service usually covers */}
+        <motion.div
+          aria-hidden
+          className={`absolute inset-y-0 transition-colors ${selected ? "bg-accent/45" : "bg-foreground/25"}`}
+          style={{ left: `${left}%`, width: `${width}%`, originX: 0 }}
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: (index % 4) * 0.06 }}
+        />
+        {/* the part of it up to the marker */}
+        <div
+          aria-hidden
+          className={`absolute inset-y-0 ${selected ? "bg-accent" : "bg-foreground/55"}`}
+          style={{ left: `${left}%`, width: `${t * width}%` }}
+        />
+        <div
+          ref={thumbRef}
+          role="slider"
+          tabIndex={0}
+          aria-label={`${name}: how big is the job`}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(t * 100)}
+          aria-valuetext={valueText}
+          onKeyDown={onKeyDown}
+          className="group/thumb absolute top-1/2 z-10 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 cursor-grab touch-none items-center justify-center outline-none active:cursor-grabbing"
+          style={{ left: `${left + t * width}%` }}
+        >
+          <span
+            className={`block h-3.5 w-3.5 rotate-45 border-2 border-background shadow transition-colors group-focus-visible/thumb:outline group-focus-visible/thumb:outline-2 group-focus-visible/thumb:outline-offset-4 group-focus-visible/thumb:outline-foreground ${
+              selected ? "bg-accent" : "bg-foreground"
+            }`}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ---------- ladder row ---------- */
 
 interface RowProps {
@@ -83,26 +201,32 @@ interface RowProps {
   index: number;
   selected: boolean;
   onToggle: () => void;
+  t: number;
+  onPoint: (t: number) => void;
   hours: number;
   onHours: (n: number) => void;
 }
 
-const LadderRow = ({ service, index, selected, onToggle, hours, onHours }: RowProps) => {
+const LadderRow = ({ service, index, selected, onToggle, t, onPoint, hours, onHours }: RowProps) => {
   const isHourly = service.unit === "hour";
   const isChat = service.unit === "whatsapp";
   // WhatsApp rows have no range, so they never touch the log scale
   const left = isChat ? 0 : pos(service.min);
   const width = isChat ? 0 : pos(service.max) - left;
+  const value = isChat ? 0 : pointOf(service, t);
+  const valueShown = money(value);
 
   return (
-    <li className="border-b border-border last:border-b-0">
+    <li
+      className={`group relative z-10 border-b border-border transition-colors last:border-b-0 hover:bg-card ${
+        selected ? "bg-card shadow-[inset_2px_0_0_0_hsl(var(--accent))]" : ""
+      }`}
+    >
       <button
         type="button"
         onClick={onToggle}
         aria-pressed={selected}
-        className={`group relative z-10 block w-full px-5 py-6 text-left transition-colors hover:bg-card focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent ${
-          selected ? "bg-card shadow-[inset_2px_0_0_0_hsl(var(--accent))]" : ""
-        }`}
+        className="block w-full px-5 pt-6 text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
       >
         <div className="flex items-start gap-4">
           <span
@@ -136,42 +260,68 @@ const LadderRow = ({ service, index, selected, onToggle, hours, onHours }: RowPr
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{service.blurb}</p>
           </div>
         </div>
+      </button>
 
-        {/* the bar sits on the same axis as the gridlines behind the list */}
+      {/* everything below sits outside the toggle button: a slider cannot live inside a button */}
+      <div className="px-5 pb-6">
         {isHourly || isChat ? (
           <p className="mt-5 text-[10px] uppercase tracking-[0.25em] text-muted-foreground/70">
             {isChat ? "Quoted individually, so it sits off the ladder" : "Billed by the hour, so it sits off the ladder"}
           </p>
         ) : (
-          <div className="mt-5 h-3 w-full bg-muted/70" aria-hidden>
-            <div className="relative h-full">
-              <motion.div
-                className={`absolute inset-y-0 transition-colors ${
-                  selected ? "bg-accent" : "bg-foreground/35 group-hover:bg-foreground/65"
-                }`}
-                style={{ left: `${left}%`, width: `${width}%`, originX: 0 }}
-                initial={{ scaleX: 0 }}
-                whileInView={{ scaleX: 1 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: (index % 4) * 0.06 }}
-              />
+          <>
+            <PointBar
+              index={index}
+              left={left}
+              width={width}
+              t={t}
+              onChange={onPoint}
+              selected={selected}
+              name={service.name}
+              valueText={`${scopeLabel(t)} scope, ${valueShown}`}
+            />
+            <div className="mt-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              <div role="group" aria-label={`${service.name}: scope`} className="flex items-center gap-1.5">
+                {PRESETS.map((preset) => {
+                  const active = nearPreset(t, preset.t);
+                  return (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => onPoint(preset.t)}
+                      className={`border px-3 py-2 text-[10px] uppercase tracking-[0.18em] transition-colors sm:px-2.5 sm:py-1 ${
+                        active
+                          ? "border-accent text-accent"
+                          : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground"
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                <span className="text-foreground">{scopeLabel(t)} scope</span>
+                <span aria-hidden> · </span>
+                <span className={selected ? "text-accent" : "text-foreground"}>{valueShown}</span>
+              </p>
             </div>
-          </div>
+          </>
         )}
 
         <ul className="mt-4 flex flex-wrap gap-2" aria-label={`Built with`}>
-          {service.tech.map((t) => (
+          {service.tech.map((tech) => (
             <li
-              key={t}
+              key={tech}
               className="border border-border px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground transition-colors group-hover:border-foreground/30"
             >
-              {t}
+              {tech}
             </li>
           ))}
         </ul>
-      </button>
+      </div>
 
-      {/* kept outside the toggle button: buttons cannot nest */}
       <AnimatePresence initial={false}>
         {isChat && selected && (
           <motion.div
@@ -179,7 +329,7 @@ const LadderRow = ({ service, index, selected, onToggle, hours, onHours }: RowPr
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="relative z-10 overflow-hidden bg-card shadow-[inset_2px_0_0_0_hsl(var(--accent))]"
+            className="relative z-10 overflow-hidden"
           >
             <div className="flex flex-wrap items-center gap-4 px-5 pb-6 pl-14">
               <span className="text-xs text-muted-foreground">
@@ -203,46 +353,63 @@ const LadderRow = ({ service, index, selected, onToggle, hours, onHours }: RowPr
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="relative z-10 overflow-hidden bg-card shadow-[inset_2px_0_0_0_hsl(var(--accent))]"
+            className="relative z-10 overflow-hidden"
           >
-            <div className="flex flex-wrap items-center gap-4 px-5 pb-6 pl-14">
-              <label htmlFor="dba-hours" className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                Hours you expect
-              </label>
-              <div className="flex items-center border border-border">
-                <button
-                  type="button"
-                  aria-label="Fewer hours"
-                  onClick={() => onHours(Math.max(1, hours - 1))}
-                  className="flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:bg-foreground hover:text-background"
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 px-5 pb-6 pl-14">
+              <div className="flex items-center gap-3">
+                <label htmlFor="dba-rate" className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+                  Rate you expect
+                </label>
                 <input
-                  id="dba-hours"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={500}
-                  value={hours}
-                  onChange={(e) => {
-                    const n = parseInt(e.target.value, 10);
-                    onHours(Number.isFinite(n) ? Math.min(500, Math.max(1, n)) : 1);
-                  }}
-                  className="h-10 w-16 border-x border-border bg-transparent text-center font-display text-xl text-foreground [appearance:textfield] focus:outline-none focus-visible:bg-muted [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  id="dba-rate"
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={Math.round(t * 100)}
+                  onChange={(e) => onPoint(Number(e.target.value) / 100)}
+                  aria-valuetext={`${money(value)} per hour`}
+                  className="h-1 w-36 cursor-pointer accent-[hsl(var(--accent))]"
                 />
-                <button
-                  type="button"
-                  aria-label="More hours"
-                  onClick={() => onHours(Math.min(500, hours + 1))}
-                  className="flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:bg-foreground hover:text-background"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
+                <span className="w-24 text-xs text-foreground">{money(value)}/hour</span>
               </div>
-              <span className="text-xs text-muted-foreground">
-                {money(service.min * hours)}–{money(service.max * hours)}
-              </span>
+              <div className="flex items-center gap-3">
+                <label htmlFor="dba-hours" className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+                  Hours you expect
+                </label>
+                <div className="flex items-center border border-border">
+                  <button
+                    type="button"
+                    aria-label="Fewer hours"
+                    onClick={() => onHours(Math.max(1, hours - 1))}
+                    className="flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:bg-foreground hover:text-background"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <input
+                    id="dba-hours"
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={500}
+                    value={hours}
+                    onChange={(e) => {
+                      const n = parseInt(e.target.value, 10);
+                      onHours(Number.isFinite(n) ? Math.min(500, Math.max(1, n)) : 1);
+                    }}
+                    className="h-10 w-16 border-x border-border bg-transparent text-center font-display text-xl text-foreground [appearance:textfield] focus:outline-none focus-visible:bg-muted [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
+                  <button
+                    type="button"
+                    aria-label="More hours"
+                    onClick={() => onHours(Math.min(500, hours + 1))}
+                    className="flex h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:bg-foreground hover:text-background"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              <span className="text-xs text-foreground">= {money(value * hours)}</span>
             </div>
           </motion.div>
         )}
@@ -256,6 +423,9 @@ const LadderRow = ({ service, index, selected, onToggle, hours, onHours }: RowPr
 const Pricing = () => {
   const [picked, setPicked] = useState<Record<string, boolean>>({});
   const [hours, setHours] = useState(DEFAULT_HOURS);
+  // Where the visitor put each service's marker (0 = bottom of its range, 1 = top).
+  const [points, setPoints] = useState<Record<string, number>>({});
+  const tOf = (id: string) => points[id] ?? DEFAULT_T;
 
   useEffect(() => {
     const previous = document.title;
@@ -271,27 +441,40 @@ const Pricing = () => {
   const priced = useMemo(() => chosen.filter((s) => s.unit !== "whatsapp"), [chosen]);
   const chatOnes = useMemo(() => chosen.filter((s) => s.unit === "whatsapp"), [chosen]);
 
-  const { low, high } = useMemo(() => {
+  // low and high are the full range of what is chosen; point is the sum of the
+  // visitor's markers, which is what the headline total shows.
+  const { low, high, point } = useMemo(() => {
     let lo = 0;
     let hi = 0;
+    let pt = 0;
     for (const s of priced) {
       const qty = s.unit === "hour" ? hours : 1;
       lo += s.min * qty;
       hi += s.max * qty;
+      pt += pointOf(s, points[s.id] ?? DEFAULT_T) * qty;
     }
-    return { low: lo, high: hi };
-  }, [priced, hours]);
+    return { low: lo, high: hi, point: pt };
+  }, [priced, hours, points]);
 
-  const shownLow = useTween(low);
-  const shownHigh = useTween(high);
+  const shownPoint = useTween(point);
 
   const toggle = (id: string) => setPicked((p) => ({ ...p, [id]: !p[id] }));
 
+  // Moving a marker (or tapping Small/Medium/Large) also adds that service.
+  const setPoint = (id: string, t: number) => {
+    setPoints((p) => ({ ...p, [id]: clamp01(t) }));
+    setPicked((p) => (p[id] ? p : { ...p, [id]: true }));
+  };
+
   const mailto = useMemo(() => {
     const lines = chosen.map((s) => {
+      const t = points[s.id] ?? DEFAULT_T;
       if (s.unit === "whatsapp") return `- ${s.name}: price on request`;
-      if (s.unit === "hour") return `- ${s.name}: ${hours} hours (${money(s.min * hours)}-${money(s.max * hours)})`;
-      return `- ${s.name}: ${money(s.min)}-${money(s.max)}`;
+      if (s.unit === "hour") {
+        const rate = pointOf(s, t);
+        return `- ${s.name}: ${hours} hours at about ${money(rate)}/hour = ${money(rate * hours)} (rate range ${money(s.min)}-${money(s.max)})`;
+      }
+      return `- ${s.name}: ${scopeLabel(t)} scope, about ${money(pointOf(s, t))} (range ${money(s.min)}-${money(s.max)})`;
     });
     const body = [
       "Hello Apex Root,",
@@ -299,14 +482,14 @@ const Pricing = () => {
       "I built this estimate on your pricing page:",
       ...lines,
       priced.length
-        ? `Total range: ${money(low)}-${money(high)}${chatOnes.length ? " (plus the items priced on request)" : ""}`
-        : "Total range: to be discussed",
+        ? `Estimate: about ${money(point)} (typical range ${money(low)}-${money(high)})${chatOnes.length ? ", plus the items priced on request" : ""}`
+        : "Estimate: to be discussed",
       "",
       "A little about my project:",
       "",
     ].join("\n");
     return `mailto:contact@apsoluts.com?subject=${encodeURIComponent("Project estimate")}&body=${encodeURIComponent(body)}`;
-  }, [chosen, priced, chatOnes, hours, low, high]);
+  }, [chosen, priced, chatOnes, hours, points, point, low, high]);
 
   // Continues the running index across groups, one number per service.
   let counter = -1;
@@ -411,8 +594,8 @@ const Pricing = () => {
               </h2>
             </div>
             <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-              Tap any service to add it. Each bar shows where that work usually lands; every gridline is ten times
-              the one before.
+              Tap a service to add it, then drag its marker along the bar, or tap Small, Medium or Large, to say how
+              big the job is. Each bar shows where that work usually lands; every gridline is ten times the one before.
             </p>
           </div>
 
@@ -453,6 +636,8 @@ const Pricing = () => {
                             index={counter}
                             selected={!!picked[s.id]}
                             onToggle={() => toggle(s.id)}
+                            t={tOf(s.id)}
+                            onPoint={(t) => setPoint(s.id, t)}
                             hours={hours}
                             onHours={setHours}
                           />
@@ -493,10 +678,12 @@ const Pricing = () => {
                   </p>
                   {priced.length ? (
                     <>
-                      <p className="mt-1 font-display text-4xl tracking-wide text-foreground md:text-5xl">
-                        {money(Math.round(shownLow))}
-                        <span className="mx-2 text-muted-foreground/60">–</span>
-                        <span className="text-accent">{money(Math.round(shownHigh))}</span>
+                      <p className="mt-1 font-display text-4xl tracking-wide text-accent md:text-5xl">
+                        {money(Math.round(shownPoint))}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        From the scope you set on each bar. Typical range for these services: {money(low)}–
+                        {money(high)}
                       </p>
                       {chatOnes.length > 0 && (
                         <p className="mt-1 text-xs text-muted-foreground">
@@ -517,6 +704,7 @@ const Pricing = () => {
                       type="button"
                       onClick={() => {
                         setPicked({});
+                        setPoints({});
                         setHours(DEFAULT_HOURS);
                       }}
                       className="flex items-center gap-2 px-3 py-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
