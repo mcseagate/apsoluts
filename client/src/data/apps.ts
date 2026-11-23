@@ -5,10 +5,11 @@
 // Checked 2026-11-21 against Apple's lookup API (every App Store id below
 // resolves, and the developer has no other iOS apps in the listing) and the
 // Apsoluts developer page on Google Play (every package below is listed).
-// Not found, so left grayed out: FoodIntel, Berean Scroll and Bokskaper on the
-// App Store (looked up by bundle ID in 35 storefronts), LinguaGo on Google Play
-// (its candidate packages app.rork.linguago and com.apexrootsolutions.linguago
-// both return 404).
+// Not found, so left grayed out: FoodIntel and Bokskaper on the App Store (looked
+// up by bundle ID in 35 storefronts), LinguaGo on Google Play (its candidate
+// packages app.rork.linguago and com.apexrootsolutions.linguago both return 404).
+// Berean Scroll reached the App Store on 2026-11-23 (id 6824113406, bundle
+// com.bereanscroll.app, seller Apex Root Solutions LLC).
 //
 //   appStoreId   the number after "id" in the App Store URL
 //   playPackage  the Android package name (the "id=" in the Play Store URL)
@@ -81,6 +82,7 @@ export const apps: AppListing[] = [
     name: "Berean Scroll",
     category: "Books",
     description: "Study the Bible word by word in Hebrew and Greek, with maps and a timeline, all available offline.",
+    appStoreId: "6824113406",
     playPackage: "com.bereanscroll.app",
   },
   {
