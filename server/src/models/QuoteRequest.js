@@ -10,6 +10,12 @@ const QuoteRequestSchema = new Schema(
     budget: { type: String, trim: true, maxlength: 100, default: "" },
     // Hash of email + requirements, to drop a double submission.
     fingerprint: { type: String, index: true },
+    // A holiday offer the visitor asked for that was running when they submitted.
+    // Only ever set by the server from campaigns/offers.js, never from the request.
+    offer: {
+      type: new Schema({ code: String, holiday: String, percent: Number, validThrough: String }, { _id: false }),
+      default: null,
+    },
     status: { type: String, enum: ["new", "reviewing", "converted", "declined"], default: "new", index: true },
     adminNote: { type: String, trim: true, maxlength: 2000, default: "" },
     projectId: { type: Schema.Types.ObjectId, ref: "Project", default: null },

@@ -21,7 +21,7 @@ export function mailTransport() {
   return null;
 }
 
-async function sendViaResend({ to, subject, html, replyTo }) {
+async function sendViaResend({ to, subject, html, text, headers, from, replyTo }) {
   const response = await fetch(RESEND_URL, {
     method: "POST",
     headers: {
@@ -29,10 +29,12 @@ async function sendViaResend({ to, subject, html, replyTo }) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM?.trim() || getFromAddress(),
+      from: from || process.env.RESEND_FROM?.trim() || getFromAddress(),
       to: [to],
       subject,
       html,
+      ...(text ? { text } : {}),
+      ...(headers ? { headers } : {}),
       ...(replyTo ? { reply_to: replyTo } : {}),
     }),
     signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
@@ -46,10 +48,10 @@ async function sendViaResend({ to, subject, html, replyTo }) {
   return { transport: "resend", id: body?.id };
 }
 
-async function sendViaSmtp({ to, subject, html, replyTo }) {
+async function sendViaSmtp({ to, subject, html, text, headers, from, replyTo }) {
   const transporter = getTransporter();
   if (!transporter) return null;
-  const info = await transporter.sendMail({ from: getFromAddress(), to, replyTo, subject, html });
+  const info = await transporter.sendMail({ from: from || getFromAddress(), to, replyTo, subject, html, text, headers });
   return { transport: "smtp", id: info.messageId };
 }
 

@@ -81,6 +81,7 @@ export async function createProjectFromQuote(quoteId, input = {}) {
       title: input.title ? text(input.title, "Title", { max: 120 }) : `Project for ${quote.name}`.slice(0, 120),
       scope: quote.requirements,
       currency,
+      offer: quote.offer ?? null,
     });
     await QuoteRequest.updateOne({ _id: quote._id }, { $set: { projectId: project._id } });
     await audit("quote", quote._id, "converted", { actor: "admin", from: "new", to: "converted", detail: `project ${project._id}` });

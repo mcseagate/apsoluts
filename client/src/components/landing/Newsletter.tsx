@@ -44,7 +44,7 @@ const Newsletter = () => {
               STAY IN THE LOOP
             </h2>
             <p className="mt-2 text-accent-foreground/70 text-sm tracking-wide">
-              Industry insights and company updates, delivered to your inbox.
+              What we build and how, about every three days, plus holiday offers. Unsubscribe any time.
             </p>
           </div>
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row w-full lg:max-w-md">

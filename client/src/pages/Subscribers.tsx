@@ -263,6 +263,12 @@ export default function Subscribers() {
           >
             Billing
           </Link>
+          <Link
+            to="/admin/campaigns"
+            className="mr-4 text-[11px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Campaigns
+          </Link>
           <Button
             onClick={handleLogout}
             variant="outline"

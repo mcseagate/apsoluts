@@ -42,6 +42,7 @@ export function quoteAdminTemplate(quote) {
         ${row("Name", quote.name)}
         ${row("Email", quote.email)}
         ${row("Budget", quote.budget || "Not given")}
+        ${quote.offer ? row("Offer", `${quote.offer.code}: ${quote.offer.percent}% off the whole project price (${quote.offer.holiday}, valid through ${quote.offer.validThrough})`) : ""}
       </table>
       <p style="color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 8px;"><strong>Requirements</strong></p>
       <div style="background-color:#f8fafc;border:1px solid #e2e8f0;padding:16px;white-space:pre-wrap;">${esc(quote.requirements)}</div>

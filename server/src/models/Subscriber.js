@@ -12,6 +12,12 @@ const SubscriberSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  // Set when the subscriber unsubscribes (or the owner removes them from mailings).
+  // Empty means "receives campaign email". Signing up again clears it.
+  unsubscribedAt: {
+    type: Date,
+    default: null,
+  },
 });
 
 export const Subscriber =

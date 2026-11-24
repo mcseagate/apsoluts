@@ -4,6 +4,13 @@ export type QuoteStatus = "new" | "reviewing" | "converted" | "declined";
 export type ProjectStatus = "draft" | "active" | "completed" | "cancelled";
 export type InvoiceStatus = "draft" | "unpaid" | "overdue" | "paid" | "void";
 
+export interface HolidayOffer {
+  code: string;
+  holiday: string;
+  percent: number;
+  validThrough: string;
+}
+
 export interface Quote {
   id: string;
   name: string;
@@ -11,6 +18,7 @@ export interface Quote {
   requirements: string;
   budget: string;
   status: QuoteStatus;
+  offer: HolidayOffer | null;
   adminNote: string;
   projectId: string | null;
   createdAt: string;
@@ -41,6 +49,7 @@ export interface Project {
   currency: string;
   timeline: string;
   status: ProjectStatus;
+  offer: HolidayOffer | null;
   acceptance: { acceptedAt: string; acceptedBy: string; method: string; reference: string; termsHash: string } | null;
   milestones: Milestone[];
   createdAt: string;

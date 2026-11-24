@@ -52,6 +52,7 @@ const quoteView = (q) => ({
   requirements: q.requirements,
   budget: q.budget,
   status: q.status,
+  offer: q.offer ?? null,
   adminNote: q.adminNote,
   projectId: q.projectId ? String(q.projectId) : null,
   createdAt: q.createdAt,
@@ -79,6 +80,7 @@ function projectView(p, invoices = []) {
     currency: p.currency,
     timeline: p.timeline,
     status: p.status,
+    offer: p.offer ?? null,
     acceptance: p.acceptance
       ? {
           acceptedAt: p.acceptance.acceptedAt,

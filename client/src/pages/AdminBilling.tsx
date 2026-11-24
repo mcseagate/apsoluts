@@ -68,6 +68,7 @@ export default function AdminBilling() {
                 <nav className="flex items-center gap-4 text-[11px] uppercase tracking-[0.2em]" aria-label="Admin">
                   <span className="text-foreground border-b border-accent pb-1">Billing</span>
                   <Link to="/admin/subscribers" className="text-muted-foreground hover:text-foreground transition-colors">Subscribers</Link>
+                  <Link to="/admin/campaigns" className="text-muted-foreground hover:text-foreground transition-colors">Campaigns</Link>
                 </nav>
               </div>
               <Button onClick={signOut} variant="outline" className="rounded-none h-10 px-4 text-xs tracking-wider uppercase gap-2"><LogOut className="w-3.5 h-3.5" /> Logout</Button>

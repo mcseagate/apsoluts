@@ -83,6 +83,11 @@ export function QuotesList({ onOpenProject }: { onOpenProject: (id: string) => v
       {open && (
         <Section title="Request" aside={<StatusBadge status={open.status} />}>
           <div className="grid grid-cols-2 gap-4"><KV k="Name">{open.name}</KV><KV k="Budget">{open.budget || "—"}</KV></div>
+          {open.offer && (
+            <p className="border border-accent bg-accent/10 p-3 text-sm">
+              <strong>Offer {open.offer.code}</strong>: {open.offer.percent}% off the whole project price ({open.offer.holiday}, requested within the offer window, valid through {open.offer.validThrough}).
+            </p>
+          )}
           <KV k="Email"><a href={`mailto:${open.email}`} className="text-accent underline-offset-4 hover:underline">{open.email}</a></KV>
           <KV k="Requirements"><span className="whitespace-pre-wrap">{open.requirements}</span></KV>
           {open.status !== "converted" ? (

@@ -10,6 +10,8 @@ import Subscribers from "./pages/Subscribers";
 import Apps from "./pages/Apps";
 import Pricing from "./pages/Pricing";
 import Quote from "./pages/Quote";
+import Unsubscribe from "./pages/Unsubscribe";
+import AdminCampaigns from "./pages/AdminCampaigns";
 import AppDevelopment from "./pages/AppDevelopment";
 import Invoice from "./pages/Invoice";
 import AdminBilling from "./pages/AdminBilling";
@@ -33,11 +35,13 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/web-app-landing" element={<AppDevelopment />} />
           <Route path="/quote" element={<Quote />} />
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
           <Route path="/invoice" element={<Invoice />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/admin/subscribers" element={<Subscribers />} />
           <Route path="/admin/billing" element={<AdminBilling />} />
+          <Route path="/admin/campaigns" element={<AdminCampaigns />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

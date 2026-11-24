@@ -2,6 +2,10 @@ import { getFromAddress } from "../config/nodemailer.js";
 import { sendMail } from "./mailer.js";
 import { getContactTemplate } from "../templates/contact.js";
 import { getNewsletterTemplate, getNewsletterAdminTemplate } from "../templates/newsletter.js";
+import { Subscriber } from "../models/Subscriber.js";
+import { connectDb } from "../config/db.js";
+import { discountPercent } from "../campaigns/offers.js";
+import { makeUnsubscribeToken, unsubscribeConfigured, unsubscribePageUrl } from "../campaigns/unsubscribe.js";
 
 const NOT_CONFIGURED = "neither RESEND_API_KEY nor SMTP_PASS is set";
 
@@ -33,7 +37,14 @@ export async function sendContactEmail(data) {
 
 export async function sendNewsletterConfirmation(email) {
   const subject = "You're subscribed to Apex Root Solutions updates";
-  const html = getNewsletterTemplate(email);
+  // The welcome email carries the same unsubscribe link as every campaign email.
+  let unsubscribeUrl;
+  if (unsubscribeConfigured()) {
+    await connectDb();
+    const subscriber = await Subscriber.findOne({ email: email.toLowerCase().trim() }, { _id: 1 }).lean();
+    if (subscriber) unsubscribeUrl = unsubscribePageUrl(makeUnsubscribeToken(subscriber._id));
+  }
+  const html = getNewsletterTemplate(email, { unsubscribeUrl, offerPercent: discountPercent() });
 
   const sent = await sendMail({ to: email, subject, html });
 

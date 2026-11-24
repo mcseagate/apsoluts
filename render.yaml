@@ -73,3 +73,17 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+      # Scheduled campaign emails (docs/CAMPAIGNS.md). Off until you set
+      # CAMPAIGN_EMAILS_ENABLED to "true" in the dashboard.
+      - key: CAMPAIGN_EMAILS_ENABLED
+        sync: false
+      - key: CAMPAIGN_SEND_HOUR_UTC
+        value: "15"
+      - key: HOLIDAY_DISCOUNT_PERCENT
+        value: "10"
+      - key: HOLIDAY_WINDOW_DAYS
+        value: "7"
+      - key: HOLIDAY_DAILY_DAYS
+        value: "3"
+      - key: CAMPAIGN_FROM
+        sync: false
