@@ -200,6 +200,39 @@ test("an email carries the offer, the terms, a postal address and a working unsu
   assert.ok(!/% off/.test(plain.subject));
 });
 
+test("the layout is a complete light-scheme document, with the offer block only on holiday emails", () => {
+  const holiday = composeCampaign({ plan: planFor("2026-11-24", null), sequence: 1, subscriber: { _id: "a".repeat(24), email: "x@y.test" } });
+  const plain = composeCampaign({ plan: planFor("2027-02-01", null), sequence: 1, subscriber: { _id: "a".repeat(24), email: "x@y.test" } });
+  for (const mail of [holiday, plain]) {
+    assert.match(mail.html, /^<!doctype html>/i);
+    assert.ok(mail.html.includes('<meta name="color-scheme" content="light only">'));
+    assert.ok(mail.html.includes("<table"), "table layout for mail apps");
+    assert.ok(mail.html.includes("Georgia"), "serif headline");
+    assert.ok(mail.html.includes("A NOTE FROM APEX ROOT SOLUTIONS"));
+    assert.ok(mail.html.includes("The Apex Root Solutions team"));
+    assert.ok(/display:none;max-height:0/.test(mail.html), "hidden preview line");
+    assert.equal((mail.html.match(/<h1/g) ?? []).length, 1);
+    assert.ok(!/<script|<form|javascript:/i.test(mail.html));
+  }
+  assert.ok(holiday.html.includes("A Thanksgiving thank-you"));
+  assert.ok(holiday.html.includes("Mention <strong"));
+  assert.ok(!plain.html.includes("thank-you"));
+  assert.ok(!/% off/.test(plain.html) && !/% off/.test(plain.text));
+  // The first topic keeps the owner's wording and its four list items.
+  assert.ok(plain.html.includes("Something worth building together."));
+  assert.ok(plain.html.includes("Connected experiences"));
+  assert.equal((plain.html.match(/&#8599;<\/td>/g) ?? []).length, 4);
+});
+
+test("every topic has an eyebrow, a headline, copy, list items and a button", () => {
+  for (const t of TOPICS) {
+    assert.ok(t.eyebrow && t.heading && t.subject, t.id);
+    assert.ok(t.paragraphs.length >= 1 && t.items.length >= 3, t.id);
+    for (const item of t.items) assert.ok(item.title && item.body, t.id);
+    assert.ok(t.cta.label && t.cta.path.startsWith("/"), t.id);
+  }
+});
+
 test("an address that looks like markup cannot break the email", () => {
   const html = composeCampaign({ plan: planFor("2027-02-01", null), sequence: 1, subscriber: { _id: "a".repeat(24), email: '"><script>alert(1)</script>@x.test' } }).html;
   assert.ok(!html.includes("<script>"));
