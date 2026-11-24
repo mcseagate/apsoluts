@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import * as b from "../controllers/admin/billing.js";
+import * as camp from "../controllers/admin/campaigns.js";
 
 const adminRouter = new Hono();
 
@@ -32,5 +33,10 @@ adminRouter.post("/invoices/:id/reissue", b.reissue);
 adminRouter.post("/invoices/:id/send", b.sendInvoice);
 adminRouter.post("/invoices/:id/link/rotate", b.rotateLinkRoute);
 adminRouter.post("/invoices/:id/link/disable", b.disableLinkRoute);
+
+adminRouter.get("/campaigns/status", camp.campaignStatus);
+adminRouter.get("/campaigns/preview", camp.previewCampaign);
+adminRouter.post("/campaigns/test-send", camp.testSendCampaign);
+adminRouter.get("/campaigns/history", camp.campaignHistory);
 
 export { adminRouter };

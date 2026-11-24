@@ -38,6 +38,12 @@ const ProjectSchema = new Schema(
     // draft: still being written; active: scope accepted; completed/cancelled: closed.
     status: { type: String, enum: ["draft", "active", "completed", "cancelled"], default: "draft", index: true },
     acceptance: { type: AcceptanceSchema, default: null },
+    // The holiday offer carried over from the quote request: a note for whoever
+    // sets the price. It does not change any amount by itself.
+    offer: {
+      type: new Schema({ code: String, holiday: String, percent: Number, validThrough: String }, { _id: false }),
+      default: null,
+    },
   },
   { timestamps: true },
 );

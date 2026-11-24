@@ -20,7 +20,7 @@ export default function AdminGate({ children }: { children: (signOut: () => void
   useEffect(() => {
     const onExpired = () => {
       setSignedIn(false);
-      toast.error("Your session expired. Please sign in again.");
+      toast.error("Your session expired. Please sign in again.", { id: "admin-session-expired" }); // one toast, however many requests failed
     };
     window.addEventListener(ADMIN_UNAUTHORIZED, onExpired);
     return () => window.removeEventListener(ADMIN_UNAUTHORIZED, onExpired);

@@ -1,4 +1,4 @@
-export function getNewsletterTemplate(email) {
+export function getNewsletterTemplate(email, { unsubscribeUrl, offerPercent } = {}) {
   return `
     <div style=" background-color:#f8fafc;padding:32px 16px;font-family:'Outfit',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
       <div style="max-width:600px;margin:0 auto;background-color:#ffffff;border:1px solid #e2e8f0;box-sizing:border-box;border-radius:10px;overflow:hidden;">
@@ -22,6 +22,10 @@ export function getNewsletterTemplate(email) {
             <li style="margin-bottom:10px;"><strong style="color:#0f172a;">Scale Bigger:</strong> Actionable case studies, industry trends, and strategic advice.</li>
           </ul>
 
+          <p style="color:#334155;font-size:13px;line-height:1.6;margin:0 0 32px 0;">
+            <strong style="color:#0f172a;">How often:</strong> about one email every three days, covering what we build and how we build it with security and quality in mind. In the week before each US federal holiday we share a holiday offer, and send daily only in the last few days before it${offerPercent ? ` of ${offerPercent}% off your whole project price` : ""}. You can unsubscribe at any time using the link at the bottom of every email.
+          </p>
+
           <div style="background-color:#f8fafc;border:1px solid #e2e8f0;padding:24px;margin-bottom:16px;">
             <p style="color:#334155;font-size:13px;line-height:1.6;margin:0 0 16px 0;">
               Have a project idea in mind? Let's build it together.
@@ -37,7 +41,7 @@ export function getNewsletterTemplate(email) {
         <!-- Footer: Dark Theme -->
         <div style="background-color:#0a0a0a;padding:24px 32px;border-top:1px solid #242424;">
           <p style="color:#808080;font-size:11px;margin:0 0 6px 0;line-height:1.4;text-transform:uppercase;letter-spacing:1px;">Apex Root Solutions LLC · 1732 Orlando Dr, Cedar Hill, TX 75104</p>
-          <p style="color:#505050;font-size:10px;margin:0;line-height:1.4;">This email was sent to ${email} because you signed up on our website.</p>
+          <p style="color:#9a9a9a;font-size:10px;margin:0;line-height:1.4;">This email was sent to ${email} because you signed up on our website.${unsubscribeUrl ? ` <a href="${unsubscribeUrl}" style="color:#ffffff;">Unsubscribe</a>.` : ""}</p>
         </div>
       </div>
     </div>

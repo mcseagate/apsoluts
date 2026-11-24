@@ -84,6 +84,10 @@ Run locally: `cd server && cp .env.example .env && npm ci && npm run dev` (port 
 - `GET /api/public/invoice`, `POST /api/public/invoice/checkout` — Client invoice view and Stripe checkout (`X-Invoice-Token` header)
 - `POST /api/webhooks/stripe` — Stripe webhook (signature verified)
 - `/api/admin/*` — Quotes, projects, invoices (Bearer admin token required on every route)
+- `POST /api/newsletter/unsubscribe` — Unsubscribe (signed token; also the one-click address in campaign email headers)
+- `/api/admin/campaigns/*` — Campaign status, preview, test send, history (admin token)
+
+Scheduled campaign emails and holiday offers: [docs/CAMPAIGNS.md](docs/CAMPAIGNS.md).
 
 Billing setup, Stripe test-mode steps and the go-live checklist are in [docs/INVOICING.md](docs/INVOICING.md).
 Server tests: `cd server && npm test`.

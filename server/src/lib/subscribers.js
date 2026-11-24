@@ -9,6 +9,11 @@ export async function addSubscriber(email) {
   // Check if subscriber already exists
   const existing = await Subscriber.findOne({ email: normalizedEmail });
   if (existing) {
+    // Signing up again is a fresh opt-in for someone who had unsubscribed.
+    if (existing.unsubscribedAt) {
+      await Subscriber.updateOne({ _id: existing._id }, { $set: { unsubscribedAt: null } });
+      return { added: true, resubscribed: true };
+    }
     return { added: false };
   }
 

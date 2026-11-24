@@ -5,7 +5,8 @@ import { audit } from "../../lib/audit.js";
 import { clientIp, handle, HttpError, readJson } from "../../lib/http.js";
 import { createLimiter } from "../../lib/rateLimit.js";
 import { notifyAdminOfQuote } from "../../lib/notify.js";
-import { email, text } from "../../lib/validate.js";
+import { email, text, todayUtc } from "../../lib/validate.js";
+import { resolveOffer } from "../../campaigns/offers.js";
 
 // The public quote form. Spam is handled in layers, none of which asks the
 // visitor to solve anything:
@@ -23,7 +24,8 @@ export const limits = {
 };
 
 const MIN_FILL_MS = 2500;
-const OK = { data: { success: true, message: "Thanks. We have your request and will reply by email, usually within one business day." } };
+const MESSAGE = "Thanks. We have your request and will reply by email, usually within one business day.";
+const OK = { data: { success: true, message: MESSAGE, offer: null } };
 
 export const submitQuote = handle(async (c) => {
   const ip = clientIp(c);
@@ -45,6 +47,10 @@ export const submitQuote = handle(async (c) => {
     requirements: text(body.requirements, "Project requirements", { min: 20, max: 5000, multiline: true }),
     budget: text(body.budget, "Budget", { max: 100, optional: true }),
   };
+  // An offer code is checked against what is running today. A wrong or expired
+  // code never blocks the request; it just is not recorded.
+  const typedCode = text(body.offerCode, "Offer code", { max: 40, optional: true });
+  const offer = resolveOffer(typedCode, todayUtc());
 
   if (!limits.perEmail.take(quote.email)) {
     throw new HttpError(429, "RATE_LIMITED", "We already have your recent requests. We will be in touch soon.");
@@ -55,9 +61,20 @@ export const submitQuote = handle(async (c) => {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
   if (await QuoteRequest.exists({ fingerprint, createdAt: { $gte: since } })) return c.json(OK);
 
-  const saved = await QuoteRequest.create({ ...quote, fingerprint });
+  const saved = await QuoteRequest.create({
+    ...quote,
+    fingerprint,
+    offer: offer ? { code: offer.code, holiday: offer.holiday, percent: offer.percent, validThrough: offer.validThrough } : null,
+  });
   await audit("quote", saved._id, "received", { actor: "client", to: "new" });
   // Not awaited for the visitor's sake; notifyAdminOfQuote never throws.
-  void notifyAdminOfQuote(quote);
-  return c.json(OK, 201);
+  void notifyAdminOfQuote({ ...quote, offer });
+  const status = offer ? "applied" : typedCode ? "not_active" : null;
+  const note =
+    status === "applied"
+      ? ` Your ${offer.percent}% ${offer.holiday} offer was recorded.`
+      : status === "not_active"
+        ? " That offer code is not running right now, so it was not applied, but we will still reply to your request."
+        : "";
+  return c.json({ data: { success: true, message: MESSAGE + note, offer: status } }, 201);
 });

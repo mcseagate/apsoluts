@@ -43,6 +43,39 @@ const toTerms = (p: Project): Terms => ({
 
 const field = "rounded-none h-9";
 
+// Whole cents from a typed amount, or NaN. Plain integer arithmetic, no floats.
+const toCents = (s: string) => {
+  if (!MONEY_PATTERN.test(s)) return NaN;
+  const [whole, frac = ""] = s.split(".");
+  return Number(whole + frac.padEnd(2, "0"));
+};
+
+// The quote came with a holiday offer. It changes no amount by itself: this shows
+// what the offer comes to for a list price and lets the admin put that in the price.
+function OfferNote({ offer, locked, onUse }: { offer: NonNullable<Project["offer"]>; locked: boolean; onUse: (price: string) => void }) {
+  const [list, setList] = useState("");
+  const cents = toCents(list);
+  const discounted = Number.isFinite(cents) ? Math.floor((cents * (100 - offer.percent) + 50) / 100) : NaN;
+  const text = (c: number) => `${Math.floor(c / 100)}.${String(c % 100).padStart(2, "0")}`;
+  return (
+    <div className="border border-accent bg-accent/10 p-4 space-y-3 text-sm">
+      <p>
+        <strong>Offer {offer.code}</strong>: {offer.percent}% off the whole project price ({offer.holiday}, valid through {offer.validThrough}). Honour it when you set the price, and write it into the Project Agreement.
+      </p>
+      {!locked && (
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="space-y-1">
+            <Label>List price before the offer</Label>
+            <Input inputMode="decimal" placeholder="1500.00" value={list} onChange={(e) => setList(e.target.value)} className="rounded-none h-9 w-40" />
+          </label>
+          <p className="pb-2 text-xs text-muted-foreground">{Number.isFinite(discounted) ? `With ${offer.percent}% off: ${text(discounted)}` : "Enter an amount like 1500.00"}</p>
+          <Button type="button" variant="outline" disabled={!Number.isFinite(discounted)} onClick={() => onUse(text(discounted))} className={btn}>Use as total price</Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProjectPanel({ projectId, onOpenInvoice }: { projectId: string; onOpenInvoice: (id: string) => void }) {
   const qc = useQueryClient();
   const key = ["admin-project", projectId];
@@ -122,6 +155,8 @@ export default function ProjectPanel({ projectId, onOpenInvoice }: { projectId: 
         <h2 className="font-display text-3xl tracking-wide">{project.title}</h2>
         <StatusBadge status={project.status} />
       </div>
+
+      {project.offer && <OfferNote offer={project.offer} locked={locked} onUse={(price) => set("price", price)} />}
 
       <Section title="Scope, price and timeline">
         <div className="grid sm:grid-cols-2 gap-4">

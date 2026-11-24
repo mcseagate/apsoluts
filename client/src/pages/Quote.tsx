@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -16,6 +16,7 @@ const schema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(254),
   requirements: z.string().trim().min(20, "Tell us a little more (at least 20 characters)").max(5000, "Please keep it under 5,000 characters"),
   budget: z.string().trim().max(100, "Keep this short, for example \"$5k to $10k\"").optional().or(z.literal("")),
+  offerCode: z.string().trim().max(40, "That code is too long").optional().or(z.literal("")),
 });
 type QuoteForm = z.infer<typeof schema>;
 
@@ -23,10 +24,12 @@ const inputClass = "bg-background border-border text-foreground placeholder:text
 
 const Quote = () => {
   const { toast } = useToast();
-  const [sent, setSent] = useState(false);
+  const [sent, setSent] = useState<string | null>(null);
+  // A link from a holiday email arrives as /quote?offer=CODE and fills the field in.
+  const [params] = useSearchParams();
   // When the form appeared: a person takes longer to fill it in than a script.
   const shownAt = useRef(Date.now());
-  const { register, handleSubmit, formState: { errors } } = useForm<QuoteForm>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, formState: { errors } } = useForm<QuoteForm>({ resolver: zodResolver(schema), defaultValues: { offerCode: (params.get("offer") ?? "").slice(0, 40) } });
 
   useEffect(() => {
     const previous = document.title;
@@ -37,7 +40,7 @@ const Quote = () => {
   const mutation = useMutation({
     mutationFn: (data: QuoteForm & { website: string }) =>
       api.post<{ success: boolean; message: string }>("/api/quotes", { ...data, elapsedMs: Date.now() - shownAt.current }),
-    onSuccess: () => setSent(true),
+    onSuccess: (res) => setSent(res.message),
     onError: (error) =>
       toast({ title: "We could not send that", description: error instanceof Error ? error.message : "Please try again.", variant: "destructive" }),
   });
@@ -72,7 +75,7 @@ const Quote = () => {
             <CheckCircle2 className="w-6 h-6 text-accent shrink-0" aria-hidden />
             <div>
               <h2 className="font-display text-3xl tracking-wide mb-2">REQUEST RECEIVED</h2>
-              <p className="text-sm text-muted-foreground">Thanks. We have your request and will reply by email, usually within one business day.</p>
+              <p className="text-sm text-muted-foreground">{sent}</p>
               <Link to="/" className="inline-block mt-6 text-[11px] uppercase tracking-[0.2em] text-accent hover:text-foreground transition-colors">Back to home →</Link>
             </div>
           </div>
@@ -109,6 +112,11 @@ const Quote = () => {
               <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Budget (optional)</span>
               <Input {...register("budget")} placeholder="For example $5k to $10k" aria-invalid={Boolean(errors.budget)} className={inputClass} />
               {errors.budget && <span role="alert" className="text-xs text-accent">{errors.budget.message}</span>}
+            </label>
+            <label className="block space-y-2 sm:max-w-xs">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Offer code (optional)</span>
+              <Input {...register("offerCode")} placeholder="From one of our emails" autoCapitalize="characters" aria-invalid={Boolean(errors.offerCode)} className={inputClass} />
+              {errors.offerCode && <span role="alert" className="text-xs text-accent">{errors.offerCode.message}</span>}
             </label>
             <button type="submit" disabled={mutation.isPending} className="inline-flex items-center gap-2 bg-accent text-accent-foreground px-8 py-4 text-[11px] uppercase tracking-[0.2em] font-medium hover:bg-accent/90 transition-colors disabled:opacity-60">
               {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden /> : null}
