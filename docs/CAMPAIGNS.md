@@ -43,13 +43,53 @@ until you set `CAMPAIGN_EMAILS_ENABLED=true` on the server (see [Turning it on](
   with a button) plus the `List-Unsubscribe` and `List-Unsubscribe-Post` headers, which give mail apps a one-click button.
 * The token is `<subscriberId>.<HMAC>` signed with `INVOICE_LINK_SECRET` under its own label. It cannot be forged or used for
   anyone else, and unsubscribing is safe to repeat. Unsubscribed people are never emailed again; signing up again opts them back in.
-* The signup form and the welcome email now state the frequency ("about every three days, daily before US federal holidays")
-  and mention the holiday offer. **Existing subscribers signed up under the old wording**; the first email is a good place to
-  tell them, and you may want to ask them to reconfirm.
+* The signup form and the welcome email state the frequency ("about every three days, daily before US federal holidays")
+  and mention the holiday offer. **Subscribers who signed up under the old wording** have no confirmation: see below.
 * Not built yet: handling of bounces and spam complaints from Resend (suppressing those addresses automatically). At a handful
   of subscribers this does not matter; add it before the list grows. A failed send is recorded and not retried that day.
 * This is not legal advice. CAN-SPAM requires, among other things, honest subject lines, a valid postal address and honoring
   unsubscribes within 10 business days; have your accountant or lawyer review the offer terms and wording.
+
+## Who can be emailed: double opt-in, opt-outs and bot defences
+
+The public forms are targets for "subscription bombing": bots type real people's addresses into signup and contact forms
+(on 2026-11-25 a burst of nonsense entries using third-party addresses arrived). Emailing such addresses would harm those people
+and damage the sender's reputation, so:
+
+* **Double opt-in.** The newsletter form stores an address as *pending* and sends one message with a **Confirm subscription** link
+  (`/confirm#<token>`, a page with a button, so mail scanners that open links cannot confirm for anyone). Only after the click does
+  the address get the welcome email, campaign emails, and an alert to you. The reply to the form is identical whether or not the
+  address was new, one confirmation goes to an address per 24 hours, and an unanswered request never leads to further mail.
+* **Eligibility.** `deliverableSubscribers()` (`lib/subscribers.js`) is the one place that decides who receives marketing email:
+  confirmed, not unsubscribed, not on the do-not-email list (`optouts`). The scheduler and the one-off message both use it.
+* **Opt-outs for non-subscribers.** One-off messages carry an opt-out token (`<base64url(email)>.<HMAC>`) that works for people who
+  are not on the list, such as quote requesters. It adds the address to `optouts`, and every send path checks that list.
+  Subscribing again and confirming lifts it. Subscriber, confirm and opt-out tokens use different labels and cannot be swapped.
+* **Bot defences on both forms** (the contact form, the newsletter form, and the quote form which already had them): a hidden
+  `website` field, a minimum 2.5 s between the form appearing and being sent (bots get the normal success reply and nothing happens),
+  limits per network address (5/hour), per email address (3/day) and overall, strict lengths, and on the contact form a message and
+  name that must contain real words. Contact-form content is HTML-escaped in the email to you.
+* The admin **Subscribers** page shows each address as Pending, Confirmed or Unsubscribed, and **Campaigns** shows the pending count.
+* Not done: a CAPTCHA (Cloudflare Turnstile is free and would need a site key from you) if bots adapt to the checks above.
+
+### Cleaning up after an attack, and the one-off message
+
+Run in the Render shell (`cd server`). Both scripts do a **dry run unless told otherwise**, mask addresses in their output, and never
+store an address in the repository.
+
+```
+node scripts/clean-subscribers.js --bots=a@x.com,b@y.com --grandfather-before=2026-11-25          # look first
+node scripts/clean-subscribers.js --bots=a@x.com,b@y.com --grandfather-before=2026-11-25 --apply  # then do it
+node scripts/send-outreach.js                 # who would get "What does your next project need?" (nothing sent)
+node scripts/send-outreach.js --test          # sends only your copy
+node scripts/send-outreach.js --send          # your copy first, then everyone listed (add --exclude=a@x.com to leave people out)
+```
+
+`clean-subscribers` marks bot signups unsubscribed (reason "bot signup") and adds them to the do-not-email list; it deletes nothing. Subscribers
+who signed up before `--grandfather-before` and are not listed as bots are treated as confirmed. The outreach message goes to confirmed
+subscribers and quote requesters only (contact-form senders are not stored, so there is no list to send to), carries its own opt-out
+link and `List-Unsubscribe` header, replies to `contact@apsoluts.com`, and is recorded per recipient (by hash) so a repeat run emails
+nobody twice. If your copy fails to send, nobody else is emailed.
 
 ## Safety against duplicates
 
@@ -59,7 +99,7 @@ address is stored in the send log.
 
 ## Turning it on
 
-1. Run the migration (it adds the two campaign collections): in the Render shell, `cd server && npm run migrate`.
+1. Run the migrations (campaign collections, then the opt-out list and the one-off send log): in the Render shell, `cd server && npm run migrate`.
 2. In Render → `apex-root-api` → Environment, check these (all have safe defaults):
 
    | Variable | Meaning |
@@ -94,3 +134,6 @@ To pause, remove the variable (or set it to anything but `true`) and redeploy.
 `cd server && npm test` includes `test/campaigns.test.js`: holiday dates for 2026 and 2027 and the weekend rule, window boundaries,
 the 20% cap, cadence over a run of days, offer-code checks, unsubscribe token security, send-once behaviour under repeats,
 interruptions and simultaneous runs, failures, the headers sent to Resend, and the admin endpoints.
+
+`test/abuse.test.js` covers the signup and contact-form defences, double opt-in, token separation, who receives campaign email and the
+opt-out list; `test/outreach.test.js` covers the one-off message, its audience rules, idempotency and the clean-up script.

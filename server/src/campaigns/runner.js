@@ -1,14 +1,15 @@
 import { connectDb } from "../config/db.js";
 import { Campaign } from "../models/Campaign.js";
 import { CampaignSend } from "../models/CampaignSend.js";
-import { Subscriber } from "../models/Subscriber.js";
+import { deliverableSubscribers } from "../lib/subscribers.js";
 import { mailTransport, sendMail } from "../lib/mailer.js";
 import { todayUtc } from "../lib/validate.js";
 import { composeCampaign } from "./compose.js";
 import { planFor } from "./schedule.js";
 import { unsubscribeConfigured } from "./unsubscribe.js";
 
-// Sends the day's campaign email to every subscriber who has not unsubscribed.
+// Sends the day's campaign email to every subscriber who confirmed their address
+// and has not unsubscribed or been put on the do-not-email list.
 //
 // Safe to call as often as you like. Each day has one Campaign row (unique by
 // date) and each subscriber one CampaignSend row per campaign (unique pair), so a
@@ -79,7 +80,7 @@ export async function runDue({ now = new Date(), send = sendMail, delayMs = 600 
       plan.kind = campaign.kind;
     }
 
-    const subscribers = await Subscriber.find({ unsubscribedAt: null }, { email: 1 }).lean();
+    const subscribers = await deliverableSubscribers();
     let sent = 0;
     let failed = 0;
     for (const subscriber of subscribers) {

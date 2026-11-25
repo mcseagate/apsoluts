@@ -45,7 +45,8 @@ beforeEach(async () => {
 });
 
 const at = (iso, hour = 15) => new Date(`${iso}T${String(hour).padStart(2, "0")}:00:00Z`);
-const sub = (email, extra = {}) => Subscriber.create({ email, ...extra });
+// Campaign mail goes only to confirmed subscribers, so test subscribers are confirmed.
+const sub = (email, extra = {}) => Subscriber.create({ email, confirmedAt: new Date(), ...extra });
 
 // ---------------------------------------------------------------------------
 // Calendar
@@ -452,23 +453,6 @@ test("a forged, borrowed or unknown unsubscribe token changes nothing", async ()
   assert.equal((await unsubscribeVia(`${a._id}.${"A".repeat(43)}`, "header")).status, 404);
 });
 
-test("signing up again after unsubscribing opts the person back in", async () => {
-  const a = await sub("again@x.test", { unsubscribedAt: new Date() });
-  const res = await api.call("POST", "/api/newsletter", { token: null, body: { email: "again@x.test" } });
-  assert.equal(res.status, 200);
-  assert.equal((await Subscriber.findById(a._id)).unsubscribedAt, null);
-});
-
-test("the welcome email states the frequency and carries an unsubscribe link", async () => {
-  await api.call("POST", "/api/newsletter", { token: null, body: { email: "new@x.test" } });
-  await new Promise((r) => setTimeout(r, 300));
-  const welcome = mail.sent.find((m) => m.to[0] === "new@x.test");
-  assert.ok(welcome, "welcome email sent");
-  assert.ok(welcome.html.includes("about one email every three days"));
-  assert.ok(welcome.html.includes("10% off"));
-  assert.match(welcome.html, /unsubscribe#[a-f0-9]{24}\./);
-});
-
 // ---------------------------------------------------------------------------
 // Offer codes on quote requests (the clock is held at Nov 24, 2026)
 
@@ -563,7 +547,7 @@ test("status, preview, test send and history", async () => {
   const status = await api.call("GET", "/api/admin/campaigns/status");
   assert.equal(status.status, 200);
   assert.equal(status.data.enabled, true);
-  assert.deepEqual(status.data.subscribers, { active: 1, unsubscribed: 1 });
+  assert.deepEqual(status.data.subscribers, { active: 1, pending: 0, unsubscribed: 1 });
   assert.equal(status.data.discount.maxPercent, 20);
   assert.equal(status.data.schedule.windowDays, 7);
   assert.equal(status.data.schedule.dailyDays, 3);

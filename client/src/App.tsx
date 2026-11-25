@@ -11,6 +11,7 @@ import Apps from "./pages/Apps";
 import Pricing from "./pages/Pricing";
 import Quote from "./pages/Quote";
 import Unsubscribe from "./pages/Unsubscribe";
+import Confirm from "./pages/Confirm";
 import AdminCampaigns from "./pages/AdminCampaigns";
 import AppDevelopment from "./pages/AppDevelopment";
 import Invoice from "./pages/Invoice";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/web-app-landing" element={<AppDevelopment />} />
           <Route path="/quote" element={<Quote />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+          <Route path="/confirm" element={<Confirm />} />
           <Route path="/invoice" element={<Invoice />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />

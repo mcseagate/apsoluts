@@ -19,7 +19,7 @@ interface Status {
   discount: { percent: number; maxPercent: number };
   today: { date: string; kind: "regular" | "holiday"; due: boolean; offer: Offer | null; alreadySentToday: boolean };
   nextHoliday: { name: string; observed: string } | null;
-  subscribers: { active: number; unsubscribed: number };
+  subscribers: { active: number; pending: number; unsubscribed: number };
   lastCampaign: { key: string; kind: string; topic: string; subject: string; status: string; counts: { sent: number; failed: number } } | null;
 }
 interface Preview { date: string; subject: string; html: string; text: string; topic: string; offerCode: string | null }
@@ -74,7 +74,8 @@ function Content() {
             <KV k="Email due today">{s.today.alreadySentToday ? "Already sent" : s.today.due ? "Yes" : "No"}</KV>
             <KV k="Next holiday">{s.nextHoliday ? `${s.nextHoliday.name}, ${s.nextHoliday.observed}` : "—"}</KV>
             <KV k="Active offer">{s.today.offer ? `${s.today.offer.code} (${s.today.offer.percent}%) through ${s.today.offer.validThrough}` : "None today"}</KV>
-            <KV k="Subscribers receiving">{s.subscribers.active}</KV>
+            <KV k="Confirmed subscribers receiving">{s.subscribers.active}</KV>
+            <KV k="Awaiting confirmation (not emailed)">{s.subscribers.pending}</KV>
             <KV k="Unsubscribed">{s.subscribers.unsubscribed}</KV>
             <KV k="Last sent">{s.lastCampaign ? `${s.lastCampaign.key}: ${s.lastCampaign.counts.sent} sent, ${s.lastCampaign.counts.failed} failed` : "Never"}</KV>
           </div>

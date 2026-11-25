@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,6 +34,7 @@ const inputClass =
 
 const ContactSection = () => {
   const { toast } = useToast();
+  const shownAt = useRef(Date.now());
   const {
     register,
     handleSubmit,
@@ -41,13 +43,15 @@ const ContactSection = () => {
   } = useForm<ContactForm>({ resolver: zodResolver(contactFormSchema) });
 
   const mutation = useMutation({
-    mutationFn: (data: ContactForm) => api.post<{ success: boolean; message: string }>("/api/contact", data),
+    mutationFn: (data: ContactForm & { website: string }) =>
+      api.post<{ success: boolean; message: string }>("/api/contact", { ...data, elapsedMs: Date.now() - shownAt.current }),
     onSuccess: (data) => {
       toast({
         title: "Message sent!",
         description: data.message || "We will get back to you shortly.",
       });
       reset();
+      shownAt.current = Date.now();
     },
     onError: (error) => {
       toast({
@@ -166,9 +170,16 @@ const ContactSection = () => {
               Send a Message
             </p>
             <form
-              onSubmit={handleSubmit((data) => mutation.mutate(data))}
+              onSubmit={handleSubmit((data) =>
+                mutation.mutate({ ...data, website: (document.getElementById("contact-website") as HTMLInputElement | null)?.value ?? "" }),
+              )}
               className="space-y-6"
             >
+              {/* A trap for scripts: people never see or fill this in. */}
+              <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+                <label htmlFor="contact-website">Website</label>
+                <input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
+              </div>
               <div>
                 <label className="text-[10px] tracking-[0.25em] uppercase text-muted-foreground block mb-2">
                   Full Name *

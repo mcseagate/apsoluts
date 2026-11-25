@@ -36,7 +36,12 @@ interface Subscriber {
   _id: string;
   email: string;
   createdAt: string;
+  confirmedAt?: string | null;
+  unsubscribedAt?: string | null;
 }
+
+// What the address can receive: only confirmed, not-unsubscribed addresses are emailed.
+const statusOf = (s: Subscriber) => (s.unsubscribedAt ? "Unsubscribed" : s.confirmedAt ? "Confirmed" : "Pending");
 
 interface SubscribersResponse {
   subscribers: Subscriber[];
@@ -338,6 +343,9 @@ export default function Subscribers() {
                     <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold py-4">
                       Email Address
                     </TableHead>
+                    <TableHead className="w-32 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold py-4">
+                      Status
+                    </TableHead>
                     <TableHead className="w-48 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold py-4">
                       Date Joined
                     </TableHead>
@@ -355,6 +363,7 @@ export default function Subscribers() {
                       <TableCell className="font-medium text-sm text-foreground py-4">
                         {sub.email}
                       </TableCell>
+                      <TableCell className="text-xs text-muted-foreground py-4">{statusOf(sub)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground py-4">
                         <span className="flex items-center gap-2">
                           <Calendar className="w-3.5 h-3.5 text-muted-foreground/40" />
