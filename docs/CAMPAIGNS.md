@@ -84,8 +84,10 @@ To pause, remove the variable (or set it to anything but `true`) and redeploy.
   before touching the offer window.
 * **Sender reputation.** Promotions share the Resend domain with invoice and contact-form mail. A separate verified sender
   (`CAMPAIGN_FROM`) is recommended before the list grows, and check your Resend plan's daily and monthly limits.
-* **Claims in the copy.** `campaigns/content.js` marks `CLAIMS TO CONFIRM` on the security and quality statements. They are written as
-  specific practices, not guarantees, and they must be true of the work you sell. Edit or remove any that are not.
+* **Claims in the copy.** The security and quality statements in `campaigns/content.js` are specific practices, not guarantees. Each one
+  carries a `source` (a section of the Terms of Service, wording already published on the site, or code and tests in this repository), and a
+  test fails if an item has no source or uses an absolute word such as "never", "always" or "guarantee". Where a practice is shown by Apex Root's
+  own systems the email says so ("on our own invoicing system..."). If you add a statement you cannot back up, leave it out.
 
 ## Tests
 

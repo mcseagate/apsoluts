@@ -175,6 +175,23 @@ test("the library has no prices and makes no absolute security promises", () => 
   assert.equal(topicFor(TOPICS.length + 1).id, TOPICS[0].id); // wraps round
 });
 
+test("security and quality statements are sourced, specific and free of absolutes", () => {
+  const checked = TOPICS.filter((x) => ["security", "quality"].includes(x.id));
+  assert.equal(checked.length, 2);
+  const absolutes = /\b(never|always|every time|everything|guarantee[ds]?|ensures?|ensured|fully|completely|totally|perfect(ly)?|impossible|unbreakable|bulletproof|100)\b/i;
+  for (const topic of checked) {
+    assert.ok(topic.items.length >= 3, topic.id);
+    for (const item of topic.items) {
+      assert.ok(item.source && item.source.length > 15, `${topic.id}: "${item.title}" needs a source`);
+      assert.ok(!absolutes.test(`${item.title} ${item.body}`), `${topic.id}: "${item.title}" uses an absolute: ${item.body}`);
+    }
+    assert.ok(!absolutes.test(`${topic.heading} ${topic.paragraphs.join(" ")}`), `${topic.id} headline or intro uses an absolute`);
+  }
+  // The source notes are for maintainers and never reach a subscriber.
+  const sent = composeCampaign({ plan: planFor("2027-02-01", null), sequence: TOPICS.findIndex((x) => x.id === "security") + 1, subscriber: null });
+  assert.ok(!sent.html.includes("server/src") && !sent.text.includes("Terms of Service sections"));
+});
+
 test("an email carries the offer, the terms, a postal address and a working unsubscribe", async () => {
   const s = await sub("pat@client.example");
   const plan = planFor("2026-11-24", null);
