@@ -1,3 +1,5 @@
+import { esc } from "./billing.js";
+
 export function getContactTemplate(data) {
   return `
     <div style=" background-color:#f8fafc;padding:32px 16px;font-family:'Outfit',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
@@ -14,18 +16,18 @@ export function getContactTemplate(data) {
             <table style="width:100%;border-collapse:collapse;">
               <tr>
                 <td style="padding:10px 0;color:#64748b;width:130px;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;vertical-align:top;"><strong>Full Name</strong></td>
-                <td style="padding:10px 0;color:#0f172a;font-size:14px;font-weight:500;">${data.fullName}</td>
+                <td style="padding:10px 0;color:#0f172a;font-size:14px;font-weight:500;">${esc(data.fullName)}</td>
               </tr>
               <tr>
                 <td style="padding:10px 0;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;vertical-align:top;"><strong>Email</strong></td>
-                <td style="padding:10px 0;color:#0f172a;font-size:14px;font-weight:500;"><a href="mailto:${data.email}" style="color:#be1c1c;text-decoration:none;font-weight:600;">${data.email}</a></td>
+                <td style="padding:10px 0;color:#0f172a;font-size:14px;font-weight:500;"><a href="mailto:${esc(data.email)}" style="color:#be1c1c;text-decoration:none;font-weight:600;">${esc(data.email)}</a></td>
               </tr>
               ${
                 data.phone
                   ? `
               <tr>
                 <td style="padding:10px 0;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;vertical-align:top;"><strong>Phone</strong></td>
-                <td style="padding:10px 0;color:#0f172a;font-size:14px;font-weight:500;">${data.phone}</td>
+                <td style="padding:10px 0;color:#0f172a;font-size:14px;font-weight:500;">${esc(data.phone)}</td>
               </tr>
               `
                   : ""
@@ -35,7 +37,7 @@ export function getContactTemplate(data) {
 
           <div style="margin-bottom:10px;">
             <p style="color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 12px 0;"><strong>Message</strong></p>
-            <div style="background-color:#f8fafc;border:1px solid #e2e8f0;padding:20px;color:#0f172a;font-size:14px;line-height:1.6;white-space:pre-wrap;margin:0;">${data.message}</div>
+            <div style="background-color:#f8fafc;border:1px solid #e2e8f0;padding:20px;color:#0f172a;font-size:14px;line-height:1.6;white-space:pre-wrap;margin:0;">${esc(data.message)}</div>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
@@ -7,12 +7,13 @@ import { api } from "@/lib/api";
 const Newsletter = () => {
   const [email, setEmail] = useState("");
   const { toast } = useToast();
+  const shownAt = useRef(Date.now());
 
   const mutation = useMutation({
-    mutationFn: (email: string) =>
-      api.post<{ success: boolean; message: string }>("/api/newsletter", { email }),
+    mutationFn: (data: { email: string; website: string }) =>
+      api.post<{ success: boolean; message: string }>("/api/newsletter", { ...data, elapsedMs: Date.now() - shownAt.current }),
     onSuccess: (data) => {
-      toast({ title: "Subscribed!", description: data.message });
+      toast({ title: "Check your inbox", description: data.message });
       setEmail("");
     },
     onError: (error) => {
@@ -26,7 +27,9 @@ const Newsletter = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) mutation.mutate(email);
+    if (email) {
+      mutation.mutate({ email, website: (document.getElementById("newsletter-website") as HTMLInputElement | null)?.value ?? "" });
+    }
   };
 
   return (
@@ -44,10 +47,15 @@ const Newsletter = () => {
               STAY IN THE LOOP
             </h2>
             <p className="mt-2 text-accent-foreground/70 text-sm tracking-wide">
-              What we build and how, about every three days, plus holiday offers. Unsubscribe any time.
+              What we build and how, about every three days, plus holiday offers. We will email you a link to confirm. Unsubscribe any time.
             </p>
           </div>
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row w-full lg:max-w-md">
+          <form onSubmit={handleSubmit} className="relative flex flex-col sm:flex-row w-full lg:max-w-md">
+            {/* A trap for scripts: people never see or fill this in. */}
+            <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+              <label htmlFor="newsletter-website">Website</label>
+              <input id="newsletter-website" name="website" type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
+            </div>
             <input
               type="email"
               placeholder="Enter your email address"

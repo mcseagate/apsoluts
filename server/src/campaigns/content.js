@@ -11,11 +11,16 @@
 //     /pricing instead. The only figure that appears is the holiday offer, which
 //     comes from campaigns/offers.js.
 //   * Technology names come from the lists on the site's pricing page.
-//   * Security and quality statements are written as specific practices, never as
-//     guarantees. No certifications or named standards are claimed, and nothing says
-//     a product "cannot be hacked" or is "uncompromised": nobody can honestly promise
-//     that. CLAIMS TO CONFIRM marks the statements the owner must be able to stand
-//     behind for the work they sell; edit or remove any that are not true for you.
+//   * Security and quality statements are specific practices, never guarantees or
+//     absolutes. No certifications or named standards are claimed, and nothing says a
+//     product "cannot be hacked", is "uncompromised", or that something "never" or
+//     "always" happens: nobody can honestly promise that. Where a practice is
+//     demonstrated by Apex Root's own systems the wording says so.
+//   * Every item in the security and quality topics carries a `source`: where the
+//     statement is backed up (a section of the Terms of Service, wording published on
+//     the site, or code and tests in this repository). The source is not shown in the
+//     email. A test fails if an item has none, or uses an absolute word. If you add an
+//     item you cannot point to evidence for, leave it out.
 
 export const TOPICS = [
   {
@@ -72,15 +77,34 @@ export const TOPICS = [
     eyebrow: "Security and care",
     heading: "Security is part of how we build.",
     paragraphs: [
-      "No one can promise software will never be attacked. So we focus on the habits that prevent the common failures, and that limit the damage when something goes wrong.",
+      "No one can promise software will not be attacked. So we focus on the habits that prevent the common failures, and that limit the damage when something goes wrong.",
     ],
-    // CLAIMS TO CONFIRM: each item must be true of the work you deliver.
     items: [
-      { title: "Secrets stay on the server", body: "Keys and credentials never sit inside the app or website code." },
-      { title: "Input is checked on the server", body: "Validation does not rely on the browser alone." },
-      { title: "Payments stay with the provider", body: "Hosted checkout, such as Stripe, means card details never touch your own servers." },
-      { title: "Confirmations are verified", body: "Payments are confirmed from the provider's signed events, not trusted from a browser redirect." },
-      { title: "Access is checked every time", body: "Administration screens are protected on the server with every request." },
+      {
+        title: "Secret keys stay on the server",
+        body: "We keep secret keys on the server, not in the app or website code. Only public identifiers meant for the browser or the phone are shipped.",
+        source: "Apex Root's invoicing system: Stripe secret key is server-only, and tests assert it is absent from responses and logs (server/test/payments.test.js).",
+      },
+      {
+        title: "Input is validated on the server",
+        body: "The server checks what it receives instead of trusting the browser or the app.",
+        source: "server/src/lib/validate.js and the quote-form and invoicing tests.",
+      },
+      {
+        title: "Card details go straight to the provider",
+        body: "With a hosted checkout such as Stripe's, card details go straight to the provider and do not reach your servers.",
+        source: "Apex Root's invoicing system uses Stripe hosted Checkout; the pricing page lists Stripe for e-commerce.",
+      },
+      {
+        title: "Payments are confirmed at the source",
+        body: "On our own invoicing system, a payment counts only once the provider's signed event confirms it, not because someone reached a thank-you page.",
+        source: "server/src/controllers/webhooks/stripe.js (signature verification) and services/payments.js; tests in server/test/payments.test.js.",
+      },
+      {
+        title: "Admin access is enforced on the server",
+        body: "Sign-in is checked on the server for each administration request, so a hidden button is not the only protection.",
+        source: "server/src/middleware/requireAdmin.js; tests assert a 401 for every admin route without a valid token (server/test/workflow.test.js).",
+      },
     ],
     cta: { label: "Talk to us about your project", path: "/quote" },
   },
@@ -106,12 +130,27 @@ export const TOPICS = [
     eyebrow: "Quality",
     heading: "Built to a standard, and checked.",
     paragraphs: ["Good software is the result of habits you can see. These are ours."],
-    // CLAIMS TO CONFIRM
     items: [
-      { title: "Tested on real devices and networks", body: "Including slow connections and older hardware, before every release." },
-      { title: "A working build every week", body: "So you see progress as it happens." },
-      { title: "A written Project Agreement", body: "Scope, deliverables, timeline and fees, set down before work begins." },
-      { title: "Defects corrected", body: "Defects in our work reported within 30 days of final delivery are fixed at no extra charge." },
+      {
+        title: "Tested on real devices and networks",
+        body: "We test on real devices and real networks, including slow connections and older hardware, before release.",
+        source: "Published on the site: Process step 4 (\"Real devices, real networks...\") and Services > Testing & QA.",
+      },
+      {
+        title: "A working build every week",
+        body: "You see a working build every week, so progress is visible as it happens.",
+        source: "Published on the site: Process step 3 (\"You see a working build every week\").",
+      },
+      {
+        title: "A written Project Agreement",
+        body: "Scope, deliverables, timeline and fees are set out in a written agreement that both sides sign.",
+        source: "Terms of Service sections 2 and 3.",
+      },
+      {
+        title: "Defects in our work are corrected",
+        body: "We correct defects in our work that are reported within 30 days of final delivery at no additional charge, as set out in our Terms of Service.",
+        source: "Terms of Service section 8 (Warranties).",
+      },
     ],
     cta: { label: "Read how a project works", path: "/web-app-landing" },
   },
@@ -125,7 +164,7 @@ export const TOPICS = [
     ],
     items: [
       { title: "Accounts and logic", body: "Authentication, business rules and queues, built with tools such as Node.js, Supabase and Docker." },
-      { title: "Databases you can rely on", body: "Setup, tuning, backups and migrations, on PostgreSQL and similar." },
+      { title: "Databases set up and looked after", body: "Setup, tuning, backups and migrations, on PostgreSQL, MongoDB and SQLite." },
       { title: "Connected to what you use", body: "Integrations with the third-party services your product needs." },
     ],
     cta: { label: "See backend services", path: "/pricing" },
@@ -154,8 +193,8 @@ export const TOPICS = [
     ],
     items: [
       { title: "Built for checkout", body: "Using tools such as Next.js, TypeScript, PostgreSQL and Stripe." },
-      { title: "Hosted payment pages", body: "Customers pay on the provider's secure page." },
-      { title: "Run it your way", body: "Order handling and an admin screen to manage the store." },
+      { title: "Hosted payment pages", body: "Customers pay on the payment provider's own page." },
+      { title: "Orders and inventory", body: "Order handling and inventory management to run the store." },
     ],
     cta: { label: "See store pricing", path: "/pricing" },
   },

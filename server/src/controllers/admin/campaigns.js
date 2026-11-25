@@ -1,6 +1,7 @@
 import { connectDb } from "../../config/db.js";
 import { Campaign } from "../../models/Campaign.js";
 import { Subscriber } from "../../models/Subscriber.js";
+import { deliverableSubscribers } from "../../lib/subscribers.js";
 import { adminNotifyAddress } from "../../lib/billingConfig.js";
 import { handle, HttpError, badRequest } from "../../lib/http.js";
 import { mailTransport, sendMail } from "../../lib/mailer.js";
@@ -20,8 +21,9 @@ const ok = (c, data, status = 200) => c.json({ data }, status);
 export const campaignStatus = handle(async (c) => {
   await connectDb();
   const today = todayUtc();
-  const [active, unsubscribed, last] = await Promise.all([
-    Subscriber.countDocuments({ unsubscribedAt: null }),
+  const [active, pending, unsubscribed, last] = await Promise.all([
+    deliverableSubscribers({ email: 1 }).then((list) => list.length),
+    Subscriber.countDocuments({ unsubscribedAt: null, confirmedAt: null }),
     Subscriber.countDocuments({ unsubscribedAt: { $ne: null } }),
     Campaign.findOne().sort({ key: -1 }).lean(),
   ]);
@@ -34,7 +36,7 @@ export const campaignStatus = handle(async (c) => {
     discount: { percent: discountPercent(), maxPercent: MAX_TOTAL_DISCOUNT_PERCENT },
     today: { date: today, kind: plan.kind, daily: plan.daily, due: plan.due, offer: plan.offer, alreadySentToday: last?.key === today },
     nextHoliday: next ? { name: next.name, observed: next.observed } : null,
-    subscribers: { active, unsubscribed },
+    subscribers: { active, pending, unsubscribed },
     lastCampaign: last ? { key: last.key, kind: last.kind, topic: last.topic, subject: last.subject, status: last.status, counts: last.counts } : null,
   });
 });
