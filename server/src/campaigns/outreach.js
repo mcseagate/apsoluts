@@ -5,11 +5,12 @@ import { OptOut } from "../models/OptOut.js";
 import { QuoteRequest } from "../models/QuoteRequest.js";
 import { Subscriber } from "../models/Subscriber.js";
 import { adminNotifyAddress, siteUrl } from "../lib/billingConfig.js";
-import { deliverableSubscribers } from "../lib/subscribers.js";
-import { sendMail } from "../lib/mailer.js";
+import { deliverableSubscribers, isOptedOut } from "../lib/subscribers.js";
+import { createLimiter } from "../lib/rateLimit.js";
+import { mailTransport, sendMail } from "../lib/mailer.js";
 import { esc } from "../templates/billing.js";
 import { CONTACT_EMAIL, EYEBROW, INK, POSTAL_ADDRESS, SANS, SERIF, TEXT, button, footerRow, listBlock, shell } from "./layout.js";
-import { makeOptOutToken, oneClickUnsubscribeUrl, unsubscribePageUrl } from "./unsubscribe.js";
+import { makeOptOutToken, oneClickUnsubscribeUrl, unsubscribeConfigured, unsubscribePageUrl } from "./unsubscribe.js";
 
 // A one-off message to people who have already told us they want to hear from us:
 // confirmed newsletter subscribers, and people who sent a quote request. It asks
@@ -24,6 +25,10 @@ import { makeOptOutToken, oneClickUnsubscribeUrl, unsubscribePageUrl } from "./u
 // Every message carries its own opt-out link and one-click List-Unsubscribe header.
 // Sending is idempotent per recipient (OneOffSend), so an interrupted run can be
 // repeated safely.
+//
+// The same message, with an opening that thanks the person for writing, is also
+// sent automatically to anyone who submits the contact or quote form (autoReply
+// below). It shares the send log, so an address gets this message once, ever.
 
 export const OUTREACH_KEY = "outreach-2026-11-25";
 
@@ -53,16 +58,28 @@ const SERVICES = [
   { title: "Something else", body: "Tell us the problem. We will say honestly whether we are the right team." },
 ];
 
+// The opening when someone has just written to us through a form.
+const REPLY_INTRO = [
+  "Thank you for getting in touch with Apex Root Solutions. We have your message and will be in touch by email.",
+  "So that we can point you in the right direction, tell us what you need and how we can help. A sentence or two is plenty: just reply to this email, or use the button below. These are the kinds of work we do.",
+];
+
 const REASONS = {
   subscriber: "because you confirmed a subscription to our updates on our website.",
   quote: "because you sent us a quote request on our website.",
+  contact: "because you sent us a message through our website.",
 };
 
 export const SUBJECT = "What does your next project need?";
+export const REPLY_SUBJECT = "Thanks for getting in touch: what does your project need?";
 
-// recipient: { email, reason: "subscriber" | "quote" }; copy: marks the owner's copy.
-export function composeOutreach({ recipient, copy = false }) {
-  const subject = copy ? `[Copy] ${SUBJECT}` : SUBJECT;
+// recipient: { email, reason: "subscriber" | "quote" | "contact" }; copy: marks the
+// owner's copy; reply: the automatic reply to a form submission (thanks the person
+// for writing first).
+export function composeOutreach({ recipient, copy = false, reply = false }) {
+  const base = reply ? REPLY_SUBJECT : SUBJECT;
+  const subject = copy ? `[Copy] ${base}` : base;
+  const intro = reply ? REPLY_INTRO : INTRO;
   const token = makeOptOutToken(recipient.email);
   const unsubPage = unsubscribePageUrl(token);
   const reason = REASONS[recipient.reason] ?? REASONS.subscriber;
@@ -80,7 +97,7 @@ export function composeOutreach({ recipient, copy = false }) {
         <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:${EYEBROW};text-transform:uppercase;margin:0 0 18px 0;">A question for you</div>
         <h1 style="margin:0 0 28px 0;font-family:${SERIF};font-size:36px;line-height:1.14;font-weight:400;color:${INK};">How can we help?</h1>
         <p style="margin:0 0 16px 0;font-size:14px;line-height:1.6;color:${TEXT};">Hello,</p>
-        ${INTRO.map((p) => `<p style="margin:0 0 16px 0;font-size:14px;line-height:1.65;color:${TEXT};">${esc(p)}</p>`).join("")}
+        ${intro.map((p) => `<p style="margin:0 0 16px 0;font-size:14px;line-height:1.65;color:${TEXT};">${esc(p)}</p>`).join("")}
         <div style="padding:6px 0 32px 0;">${button(mailtoUrl(), "Tell us about your project")}</div>
       </td></tr>`,
       listBlock(SERVICES),
@@ -105,7 +122,7 @@ export function composeOutreach({ recipient, copy = false }) {
     "",
     "Hello,",
     "",
-    ...INTRO.flatMap((p) => [p, ""]),
+    ...intro.flatMap((p) => [p, ""]),
     `Tell us about your project: reply to this email or write to ${CONTACT_EMAIL}`,
     "",
     ...SERVICES.map((s) => `- ${s.title}: ${s.body}`),
@@ -146,7 +163,7 @@ export async function outreachAudience({ exclude = [] } = {}) {
 
 const failureCode = (err) => String(err?.message ?? "error").replace(/[^\w .:-]/g, "").slice(0, 60);
 
-async function deliver({ key, recipient, copy, send, from }) {
+async function deliver({ key, recipient, copy, reply = false, send, from }) {
   try {
     await OneOffSend.create({ key, emailHash: hashOf(recipient.email) });
   } catch (err) {
@@ -154,7 +171,7 @@ async function deliver({ key, recipient, copy, send, from }) {
     throw err;
   }
   try {
-    const message = composeOutreach({ recipient, copy });
+    const message = composeOutreach({ recipient, copy, reply });
     const result = await send({ to: recipient.email, ...message, ...(from ? { from } : {}) });
     if (!result) throw new Error("mail_not_configured");
     await OneOffSend.updateOne({ key, emailHash: hashOf(recipient.email) }, { $set: { status: "sent" } });
@@ -194,4 +211,46 @@ export async function runOutreach({ mode = "dry-run", exclude = [], key = OUTREA
   }
   log(`Done: ${tally.sent} sent, ${tally.failed} failed, ${tally.skipped} already sent.`);
   return { mode, audience: audience.length, ...tally };
+}
+
+// ---------------------------------------------------------------------------
+// Automatic reply to a form submission
+
+export const autoReplyEnabled = () => process.env.CONTACT_AUTOREPLY?.trim().toLowerCase() !== "false";
+
+// The forms are public, so a bot can type someone else's address into one. Every
+// form already drops bots and limits requests per address; these caps are a
+// second, lower ceiling on how many automatic replies can ever leave per hour and
+// per day, whatever gets through.
+export const autoReplyLimits = {
+  hourly: createLimiter({ windowMs: 60 * 60 * 1000, max: 20 }),
+  daily: createLimiter({ windowMs: 24 * 60 * 60 * 1000, max: 60 }),
+};
+
+// Sends the "thanks for getting in touch: what does your project need?" message
+// to someone who has just submitted the contact or quote form. source: "contact"
+// or "quote". Called after the submission has passed the form's checks, and never
+// awaited by the request: it resolves to a short status and never throws.
+//
+// It does not send when: the feature is switched off (CONTACT_AUTOREPLY=false),
+// mail or link signing is not configured, a cap is reached, the address is on the
+// do-not-email list or unsubscribed, or the address has already been sent this
+// message (by this feature or by the one-off run), which keeps a person who writes
+// twice from being answered twice.
+export async function autoReply({ email, source = "contact", send = sendMail, from = process.env.CAMPAIGN_FROM?.trim() || undefined } = {}) {
+  try {
+    if (!autoReplyEnabled()) return "disabled";
+    if (!mailTransport() || !unsubscribeConfigured()) return "not_configured";
+    const address = String(email ?? "").toLowerCase().trim();
+    if (!address) return "no_address";
+    await connectDb();
+    if (await isOptedOut(address)) return "opted_out";
+    if (await Subscriber.exists({ email: address, unsubscribedAt: { $ne: null } })) return "opted_out";
+    if (await OneOffSend.exists({ key: OUTREACH_KEY, emailHash: hashOf(address) })) return "already_sent";
+    if (!autoReplyLimits.hourly.take("all") || !autoReplyLimits.daily.take("all")) return "capped";
+    return await deliver({ key: OUTREACH_KEY, recipient: { email: address, reason: source === "quote" ? "quote" : "contact" }, copy: false, reply: true, send, from });
+  } catch (err) {
+    console.error("[AutoReply] failed:", err?.message ?? err);
+    return "error";
+  }
 }

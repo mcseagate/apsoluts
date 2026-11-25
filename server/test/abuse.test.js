@@ -1,5 +1,6 @@
 import test, { after, before, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { captureMail, configureEnv, makeCaller, startDb } from "./helpers.js";
 
 configureEnv({ CAMPAIGN_EMAILS_ENABLED: "true" });
@@ -13,6 +14,9 @@ const { limits: contactLimits } = await import("../src/controllers/contact/submi
 const { limiter: confirmLimiter } = await import("../src/controllers/newsletter/confirm.js");
 const { limiter: unsubLimiter } = await import("../src/controllers/newsletter/unsubscribe.js");
 const { deliverableSubscribers, requestSubscription } = await import("../src/lib/subscribers.js");
+const { autoReply, autoReplyLimits, OUTREACH_KEY } = await import("../src/campaigns/outreach.js");
+const { OneOffSend } = await import("../src/models/OneOffSend.js");
+const { limits: quoteLimits } = await import("../src/controllers/quotes/submit.js");
 
 let db;
 let mail;
@@ -31,7 +35,8 @@ after(async () => {
 beforeEach(async () => {
   await db.clear();
   mail.clear();
-  for (const l of [...Object.values(newsletterLimits), ...Object.values(contactLimits), confirmLimiter, unsubLimiter]) l.reset();
+  for (const l of [...Object.values(newsletterLimits), ...Object.values(contactLimits), ...Object.values(autoReplyLimits), ...Object.values(quoteLimits), confirmLimiter, unsubLimiter]) l.reset();
+  delete process.env.CONTACT_AUTOREPLY;
 });
 
 const wait = async (cond, ms = 1500) => {
@@ -234,8 +239,9 @@ test("a forged opt-out token changes nothing", async () => {
 test("a genuine message reaches the inbox, with the sender's details escaped", async () => {
   const res = await contact({ fullName: "Dana <b>Reyes</b>", message: "Hello <script>alert(1)</script> we need a portal." });
   assert.equal(res.status, 200);
-  assert.equal(mail.sent.length, 1);
-  const [m] = mail.sent;
+  await settle();
+  const m = mail.sent.find((x) => x.to[0] === "contact@apsoluts.com");
+  assert.ok(m, "inbox copy sent");
   assert.deepEqual(m.to, ["contact@apsoluts.com"]);
   assert.equal(m.reply_to, "dana@x.test");
   assert.ok(!m.html.includes("<script>"));
@@ -270,4 +276,89 @@ test("the contact form is limited per network address and per email address", as
   contactLimits.perIp.reset();
   for (let i = 0; i < 3; i += 1) assert.equal((await contact({ email: "one@x.test" })).status, 200);
   assert.equal((await contact({ email: "one@x.test" })).status, 429);
+});
+
+// ---------------------------------------------------------------------------
+// Automatic reply to form submissions
+
+const repliesTo = (addr) => mail.sent.filter((m) => m.to[0] === addr && /Thanks for getting in touch/.test(m.subject));
+
+test("someone who submits the contact form gets the 'what does your project need?' reply, once", async () => {
+  assert.equal((await contact({ email: "dana@x.test" })).status, 200);
+  await wait(() => repliesTo("dana@x.test").length > 0);
+  await settle();
+  const [reply] = repliesTo("dana@x.test");
+  assert.ok(reply, "reply sent");
+  assert.equal(reply.reply_to, "contact@apsoluts.com");
+  for (const part of [reply.html, reply.text]) {
+    assert.ok(part.includes("Thank you for getting in touch"));
+    assert.ok(part.includes("what you need and how we can help"));
+    assert.ok(part.includes("/web-app-landing"));
+    assert.ok(part.includes("1732 Orlando Dr, Cedar Hill, TX 75104"));
+    assert.ok(part.includes("you sent us a message through our website"));
+  }
+  assert.match(reply.headers["List-Unsubscribe"], /api\/newsletter\/unsubscribe\?t=/);
+  assert.ok(mail.sent.some((m) => m.to[0] === "contact@apsoluts.com"), "the inbox copy is still sent");
+
+  // Writing again does not get a second reply.
+  await contact({ email: "dana@x.test", message: "Another question about the same portal." });
+  await settle();
+  assert.equal(repliesTo("dana@x.test").length, 1);
+  // (Replies still finishing from earlier tests may be in the log; count only this address.)
+  assert.equal(await OneOffSend.countDocuments({ key: OUTREACH_KEY, emailHash: createHash("sha256").update("dana@x.test").digest("hex") }), 1);
+});
+
+test("an address that already received the one-off message is not answered again", async () => {
+  const { runOutreach } = await import("../src/campaigns/outreach.js");
+  await Subscriber.create({ email: "dana@x.test", confirmedAt: new Date() });
+  const sent = [];
+  await runOutreach({ mode: "send", send: async (m) => (sent.push(m), { id: "x" }), delayMs: 0, log: () => {} });
+  assert.ok(sent.some((m) => m.to === "dana@x.test"));
+  await contact({ email: "dana@x.test" });
+  await settle();
+  assert.equal(repliesTo("dana@x.test").length, 0);
+});
+
+test("the quote form gets the same reply", async () => {
+  const res = await api.call("POST", "/api/quotes", {
+    token: null,
+    headers: { "x-forwarded-for": freshIp() },
+    body: { elapsedMs: 9000, website: "", name: "Pat Client", email: "pat@x.test", requirements: "We need a booking app for our studio, iOS and web." },
+  });
+  assert.equal(res.status, 201);
+  await wait(() => repliesTo("pat@x.test").length > 0);
+  const [reply] = repliesTo("pat@x.test");
+  assert.ok(reply.html.includes("you sent us a quote request"));
+});
+
+test("no reply goes to bots, refused submissions, opted-out or unsubscribed addresses", async () => {
+  await contact({ email: "bot1@x.test", website: "http://spam.test" });
+  await contact({ email: "bot2@x.test", elapsedMs: 100 });
+  await contact({ email: "bot3@x.test", message: "1234567890123" });
+  await OptOut.create({ email: "blocked@x.test" });
+  await contact({ email: "blocked@x.test" });
+  await Subscriber.create({ email: "left@x.test", confirmedAt: new Date(), unsubscribedAt: new Date() });
+  await contact({ email: "left@x.test" });
+  await settle();
+  assert.equal(mail.sent.filter((m) => /Thanks for getting in touch/.test(m.subject)).length, 0);
+  // The inbox still gets the genuine ones.
+  assert.ok(mail.sent.some((m) => m.reply_to === "blocked@x.test"));
+});
+
+test("the reply can be switched off, and is capped per hour whatever gets through", async () => {
+  process.env.CONTACT_AUTOREPLY = "false";
+  assert.equal(await autoReply({ email: "a@x.test" }), "disabled");
+  delete process.env.CONTACT_AUTOREPLY;
+
+  const results = [];
+  for (let i = 0; i < 22; i += 1) results.push(await autoReply({ email: `u${i}@x.test`, send: async () => ({ id: "x" }) }));
+  assert.equal(results.filter((r) => r === "sent").length, 20);
+  assert.equal(results.filter((r) => r === "capped").length, 2);
+});
+
+test("a failing mail provider never breaks the form", async () => {
+  assert.equal(await autoReply({ email: "z@x.test", send: async () => { throw new Error("Resend 500"); } }), "failed");
+  const row = await OneOffSend.findOne().lean();
+  assert.equal(row.status, "failed");
+  assert.ok(!JSON.stringify(row).includes("@"));
 });

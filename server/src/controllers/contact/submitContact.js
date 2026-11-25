@@ -1,4 +1,5 @@
 import { sendContactEmail } from "../../lib/email.js";
+import { autoReply } from "../../campaigns/outreach.js";
 import { clientIp, handle, HttpError, readJson, badRequest } from "../../lib/http.js";
 import { createLimiter } from "../../lib/rateLimit.js";
 import { isTrapped, looksLikeWriting } from "../../lib/formGuard.js";
@@ -46,5 +47,7 @@ export const submitContact = handle(async (c) => {
     console.error("[Contact] Email send failed:", err);
     return c.json({ error: { message: "Failed to send message. Please try again.", code: "EMAIL_ERROR" } }, 500);
   }
+  // Not awaited for the visitor's sake; autoReply never throws.
+  void autoReply({ email: message.email, source: "contact" });
   return c.json(OK);
 });

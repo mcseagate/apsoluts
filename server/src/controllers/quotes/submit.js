@@ -5,6 +5,7 @@ import { audit } from "../../lib/audit.js";
 import { clientIp, handle, HttpError, readJson } from "../../lib/http.js";
 import { createLimiter } from "../../lib/rateLimit.js";
 import { notifyAdminOfQuote } from "../../lib/notify.js";
+import { autoReply } from "../../campaigns/outreach.js";
 import { email, text, todayUtc } from "../../lib/validate.js";
 import { resolveOffer } from "../../campaigns/offers.js";
 
@@ -69,6 +70,7 @@ export const submitQuote = handle(async (c) => {
   await audit("quote", saved._id, "received", { actor: "client", to: "new" });
   // Not awaited for the visitor's sake; notifyAdminOfQuote never throws.
   void notifyAdminOfQuote({ ...quote, offer });
+  void autoReply({ email: quote.email, source: "quote" });
   const status = offer ? "applied" : typedCode ? "not_active" : null;
   const note =
     status === "applied"
