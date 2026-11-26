@@ -142,10 +142,12 @@ test("the quote form validates input and protects itself from spam", async () =>
   const ok = await submitQuote(goodQuote());
   assert.equal(ok.status, 201);
   assert.equal(await QuoteRequest.countDocuments(), 1);
-  // The administrator is notified through the existing mail service.
-  await new Promise((r) => setTimeout(r, 50));
-  assert.equal(mail.sent.length, 1);
-  assert.equal(mail.sent[0].to[0], "admin@example.test");
+  // The administrator is notified through the existing mail service, and the
+  // client gets the automatic "thanks for getting in touch" reply.
+  await new Promise((r) => setTimeout(r, 250));
+  assert.equal(mail.sent.length, 2);
+  assert.ok(mail.sent.some((m) => m.to[0] === "admin@example.test"));
+  assert.ok(mail.sent.some((m) => m.to[0] === goodQuote().email && /Thanks for getting in touch/.test(m.subject)));
 });
 
 test("quote requests: duplicates are dropped and floods are rate limited", async () => {

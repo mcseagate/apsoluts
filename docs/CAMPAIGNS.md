@@ -91,6 +91,24 @@ subscribers and quote requesters only (contact-form senders are not stored, so t
 link and `List-Unsubscribe` header, replies to `contact@apsoluts.com`, and is recorded per recipient (by hash) so a repeat run emails
 nobody twice. If your copy fails to send, nobody else is emailed.
 
+### Automatic reply to form submissions
+
+Anyone who submits the **contact form** or the **quote form** automatically gets the same "what does your project need?" message, with an
+opening that thanks them for writing ("Thanks for getting in touch: what does your project need?"). It carries the services list, a
+button to email you, a button to the landing page, the postal address, and its own unsubscribe link and `List-Unsubscribe` header.
+Replies go to `contact@apsoluts.com`.
+
+Because a bot can type someone else's address into a form, the reply is held back by several limits:
+
+* It is sent only after the submission passed the form's bot checks, so trapped, too-fast, digit-only and over-limit submissions get nothing.
+* An address gets this message **once, ever**. The send log is shared with the one-off message, so someone who writes twice, or who already
+  received the one-off message, is not answered again. Addresses on the do-not-email list, and unsubscribed subscribers, are skipped.
+* A second ceiling regardless of the forms' own limits: at most **20 replies an hour and 60 a day** across the site.
+* It never delays or breaks the form: it is sent in the background and any failure is only logged.
+* **Switch it off** by setting `CONTACT_AUTOREPLY=false` in Render and redeploying.
+
+The newsletter signup is not included: those addresses already get a confirmation request, then the welcome email once they confirm.
+
 ## Safety against duplicates
 
 Each day has one `campaigns` row (unique by date) and each subscriber one `campaignsends` row per campaign (unique pair). A
